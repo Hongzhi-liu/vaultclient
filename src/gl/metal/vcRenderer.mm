@@ -314,7 +314,7 @@
   [self bindViewport:viewport];
 }
 
-- (void)destroyFramebuffer:(vcFramebuffer*)pFramebuffer
+- (void)destroyFramebuffer:(nonnull vcFramebuffer*)pFramebuffer
 {
   if (pCurrFramebuffer->ID == pFramebuffer->ID)
     pCurrFramebuffer = nullptr;
