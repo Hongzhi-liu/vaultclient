@@ -569,5 +569,17 @@
   "bindingsRenameSceneItem": "Key to rename selected scene item.",
   "bindingsSave": "Key to save key bindings.",
   "bindingsLoad": "Key to load key bindings.",
-  "bindingsSelectKey": "Press a key combination to bind."
+  
+  "settingsScreenshot": "Screenshot",
+  "settingsScreenshotHideLabels": "Hide Labels",
+  "settingsScreenshotResLabel": "Resolution",
+  "settingsScreenshotRes720p": "720p Resolution",
+  "settingsScreenshotRes1080p": "1080p Resolution",
+  "settingsScreenshotRes4K": "4K Resolution",
+  "settingsScreenshotFormatLabel": "Image Format",
+  "settingsScreenshotFilename": "Filename",
+  "settingsScreenshotView": "View Once Taken",
+
+  "screenshotTake": "Take Screenshot",
+  "screenshotDefaultName": "Screen Capture"
 }

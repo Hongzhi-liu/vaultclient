@@ -166,7 +166,8 @@ struct vcState
     int height;
 
     vcImageType imageType;
-  } image;
+  } image[2];
+  bool destroyImage;
 
   int64_t lastEventTime;
   vcTranslationInfo languageInfo;
