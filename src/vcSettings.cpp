@@ -690,7 +690,7 @@ bool vcSettings_Save(vcSettings *pSettings)
   data.Set(&tempNode, "convert.license");
 
   // Screenshots
-  data.Set("screenshot.enabled = %s", pSettings->screenshot.hideLabels ? "true" : "false");
+  data.Set("screenshot.hideLabels = %s", pSettings->screenshot.hideLabels ? "true" : "false");
   data.Set("screenshot.format = '%s'", ScreenshotExportFormats[(int)pSettings->screenshot.format]);
   data.Set("screenshot.res = '%s'", ScreenshotResolutionStrings[(int)pSettings->screenshot.res]);
   data.Set("screenshot.outputName = '%s'", pSettings->screenshot.outputName);

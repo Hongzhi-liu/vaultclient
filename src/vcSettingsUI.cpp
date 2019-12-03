@@ -459,8 +459,8 @@ void vcSettingsUI_Show(vcState *pProgramState)
     if (openedHeader)
     {
       // Resolution
-      static const char* pRes[3] = { vcString::Get("settingsScreenshotRes720p"), vcString::Get("settingsScreenshotRes1080p"), vcString::Get("settingsScreenshotRes4K") };
-      ImGui::Combo(vcString::Get("settingsScreenshotResLabel"), (int*)&pProgramState->settings.screenshot.res, pRes, 3);
+      static const char* pRes[4] = { vcString::Get("settingsScreenshotRes720p"), vcString::Get("settingsScreenshotRes1080p"), vcString::Get("settingsScreenshotRes4K"), vcString::Get("settingsScreenshotResScene") };
+      ImGui::Combo(vcString::Get("settingsScreenshotResLabel"), (int*)&pProgramState->settings.screenshot.res, pRes, 4);
 
       // Hide Labels/Measurements
       ImGui::Checkbox(vcString::Get("settingsScreenshotHideLabels"), &pProgramState->settings.screenshot.hideLabels);
@@ -470,7 +470,7 @@ void vcSettingsUI_Show(vcState *pProgramState)
       ImGui::Checkbox(vcString::Get("settingsScreenshotView"), &pProgramState->settings.screenshot.viewShot);
 
       // Output format
-      ImGui::Combo(vcString::Get("settingsScreenshotFormatLabel"), (int*)&pProgramState->settings.screenshot.format, ScreenshotExportFormats, 4);
+      ImGui::Combo(vcString::Get("settingsScreenshotFormatLabel"), (int*)&pProgramState->settings.screenshot.format, ScreenshotExportFormats, udLengthOf(ScreenshotExportFormats));
       ImGui::InputText(vcString::Get("settingsScreenshotFilename"), pProgramState->settings.screenshot.outputName, sizeof(pProgramState->settings.screenshot.outputName));
     }
   }
