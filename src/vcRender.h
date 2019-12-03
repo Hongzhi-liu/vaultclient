@@ -91,7 +91,7 @@ struct vcRenderData
   udFloat2 sceneScaling;
 };
 
-vcFramebuffer* vcRender_GetSceneFramebuffer(vcRenderContext* pRenderContext);
+vcFramebuffer *vcRender_GetSceneFramebuffer(vcRenderContext *pRenderContext);
 
 udResult vcRender_Init(vcState *pProgramState, vcRenderContext **ppRenderContext, udWorkerPool *pWorkerPool, const udUInt2 &windowResolution);
 udResult vcRender_Destroy(vcState *pProgramState, vcRenderContext **pRenderContext);

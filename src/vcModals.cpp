@@ -5,7 +5,6 @@
 #include "vcThirdPartyLicenses.h"
 #include "vcPOI.h"
 #include "gl/vcTexture.h"
-#include "gl/vcFramebuffer.h"
 #include "vcRender.h"
 #include "vcStrings.h"
 #include "vcConvert.h"
@@ -768,7 +767,7 @@ void vcModals_DrawImageViewer(vcState *pProgramState)
     ImGui::OpenPopup(vcString::Get("sceneImageViewerTitle"));
 
   ImGui::SetNextWindowSizeConstraints(ImVec2(50.f, 50.f), ImVec2((float)pProgramState->settings.window.width, (float)pProgramState->settings.window.height));
-  ImGui::SetNextWindowSize(ImVec2((float)pProgramState->image[0].width + 25, (float)pProgramState->image[0].height + 50), ImGuiCond_Appearing);
+  ImGui::SetNextWindowSize(ImVec2((float)pProgramState->image.width + 25, (float)pProgramState->image.height + 50), ImGuiCond_Appearing);
   if (ImGui::BeginPopupModal(vcString::Get("sceneImageViewerTitle"), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar))
   {
     pProgramState->modalOpen = true;
@@ -779,48 +778,48 @@ void vcModals_DrawImageViewer(vcState *pProgramState)
       ImVec2 window = ImGui::GetWindowSize();
       ImVec2 windowPos = ImGui::GetWindowPos();
 
-#ifdef GRAPHICS_API_OPENGL
+#if GRAPHICS_API_OPENGL
       ImVec2 uvs[2] = { {0,1}, {1,0} };
 #else
       ImVec2 uvs[2] = { {0,0}, {1,1} };
 #endif
       
-      ImGui::Image(pProgramState->image[0].pImage, ImVec2((float)pProgramState->image[0].width, (float)pProgramState->image[0].height), uvs[0], uvs[1]);
+      ImGui::Image(pProgramState->image.pImage, ImVec2((float)pProgramState->image.width, (float)pProgramState->image.height), uvs[0], uvs[1]);
 
       if (ImGui::IsWindowHovered())
       {
         io.MouseWheel += ImGui::IsMouseDoubleClicked(0);
-        if (io.MouseWheel != 0 && (io.MouseWheel > 0 || (pProgramState->image[0].width > window.x || pProgramState->image[0].height > window.y + 15)))
+        if (io.MouseWheel != 0 && (io.MouseWheel > 0 || (pProgramState->image.width > window.x || pProgramState->image.height > window.y + 15)))
         {
           float scaleFactor = io.MouseWheel / 10;
 
-          float ratio = (float)pProgramState->image[0].width / (float)pProgramState->image[0].height;
+          float ratio = (float)pProgramState->image.width / (float)pProgramState->image.height;
           float xRatio = float((io.MousePos.x - windowPos.x) / window.x - .5);
           float yRatio = float((io.MousePos.y - windowPos.y) / window.y - .5);
 
-          float deltaX = pProgramState->image[0].width * scaleFactor;
-          float deltaY = pProgramState->image[0].height * scaleFactor;
+          float deltaX = pProgramState->image.width * scaleFactor;
+          float deltaY = pProgramState->image.height * scaleFactor;
 
           ImGui::SetScrollX(ImGui::GetScrollX() + (deltaX / 2) + (deltaX * xRatio));
           ImGui::SetScrollY(ImGui::GetScrollY() + (deltaY / 2) + (deltaY * yRatio));
 
-          pProgramState->image[0].width = int(pProgramState->image[0].width * (1 + scaleFactor));
-          pProgramState->image[0].height = int(pProgramState->image[0].height * (1 + scaleFactor));
+          pProgramState->image.width = int(pProgramState->image.width * (1 + scaleFactor));
+          pProgramState->image.height = int(pProgramState->image.height * (1 + scaleFactor));
 
-          if (pProgramState->image[0].width > pProgramState->image[0].height)
+          if (pProgramState->image.width > pProgramState->image.height)
           {
-            if (pProgramState->image[0].width < (int)window.x)
+            if (pProgramState->image.width < (int)window.x)
             {
-              pProgramState->image[0].width = (int)window.x;
-              pProgramState->image[0].height = int(pProgramState->image[0].width / ratio);
+              pProgramState->image.width = (int)window.x;
+              pProgramState->image.height = int(pProgramState->image.width / ratio);
             }
           }
           else
           {
-            if (pProgramState->image[0].height < (int)window.y)
+            if (pProgramState->image.height < (int)window.y)
             {
-              pProgramState->image[0].height = (int)window.y;
-              pProgramState->image[0].width = int(pProgramState->image[0].height * ratio);
+              pProgramState->image.height = (int)window.y;
+              pProgramState->image.width = int(pProgramState->image.height * ratio);
             }
           }
         }
@@ -833,15 +832,8 @@ void vcModals_DrawImageViewer(vcState *pProgramState)
       }
     }
 
-    if (ImGui::Button(vcString::Get("sceneImageViewerCloseButton"), ImVec2((float)pProgramState->image[0].width, 0.f)) || vcHotkey::IsPressed(vcB_Close))
-    {
+    if (ImGui::Button(vcString::Get("sceneImageViewerCloseButton"), ImVec2((float)pProgramState->image.width, 0.f)) || vcHotkey::IsPressed(vcB_Close))
       ImGui::CloseCurrentPopup();
-
-      if (pProgramState->destroyImage)
-        vcTexture_Destroy(&pProgramState->image[0].pImage);
-      else
-        pProgramState->image[0].pImage = nullptr;
-    }
 
     ImGui::EndChild();
 

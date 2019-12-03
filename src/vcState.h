@@ -166,7 +166,7 @@ struct vcState
     int height;
 
     vcImageType imageType;
-  } image[2];
+  } image, screenshot;
   bool destroyImage;
 
   int64_t lastEventTime;

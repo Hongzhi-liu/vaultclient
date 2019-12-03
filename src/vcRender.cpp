@@ -240,7 +240,7 @@ struct vcRenderContext
 udResult vcRender_RecreateUDView(vcState *pProgramState, vcRenderContext *pRenderContext);
 udResult vcRender_RenderUD(vcState *pProgramState, vcRenderContext *pRenderContext, vdkRenderView *pRenderView, vcCamera *pCamera, vcRenderData &renderData, bool doPick);
 
-vcFramebuffer* vcRender_GetSceneFramebuffer(vcRenderContext* pRenderContext)
+vcFramebuffer *vcRender_GetSceneFramebuffer(vcRenderContext *pRenderContext)
 {
   return pRenderContext->pFramebuffer[1];
 }

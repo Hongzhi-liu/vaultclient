@@ -56,9 +56,6 @@
 #include "udUUID.h"
 
 #include "udPlatformUtil.h"
-#include "stb_image.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
 
 #if UDPLATFORM_EMSCRIPTEN
 #include "vHTTPRequest.h"
@@ -193,72 +190,35 @@ void vcMain_PresentationMode(vcState *pProgramState)
     pProgramState->lastEventTime = udGetEpochSecsUTCd();
 }
 
-bool vcMain_TakeScreenshot(vcState* pProgramState, const char* pFilename = nullptr)
+bool vcMain_TakeScreenshot(vcState *pProgramState, const char *pFilename = nullptr)
 {
-  if (pProgramState == nullptr || pProgramState->image[1].pImage == nullptr)
+  pProgramState->settings.screenshot.taking = true;
+
+  if (pProgramState == nullptr)
     return false;
 
   udInt2 currSize = udInt2::zero();
-  vcTexture_GetSize(pProgramState->image[1].pImage, &currSize.x, &currSize.y);
+  vcTexture_GetSize(pProgramState->screenshot.pImage, &currSize.x, &currSize.y);
 
   if (currSize.x - ScreenshotResolutions[pProgramState->settings.screenshot.res].x > 32 || currSize.y - ScreenshotResolutions[pProgramState->settings.screenshot.res].y > 32)
     return true;
 
-  if (pFilename == nullptr || udStrEqual(pFilename, ""))
+  if (pFilename == nullptr || *pFilename == '\0')
     pFilename = vcString::Get("screenshotDefaultName");
-
-  pProgramState->settings.screenshot.pPixels = udAllocType(uint8_t, pProgramState->sceneResolution.x * pProgramState->sceneResolution.y * 4, udAF_Zero);
-  if (pProgramState->settings.screenshot.pPixels == nullptr)
-    return false;
-
-  vcTexture_BeginReadPixels(pProgramState->image[1].pImage, 0, 0, pProgramState->sceneResolution.x, pProgramState->sceneResolution.y, pProgramState->settings.screenshot.pPixels, vcRender_GetSceneFramebuffer(pProgramState->pRenderContext));
-  vcFramebuffer_Bind(pProgramState->pDefaultFramebuffer);
-
-#if (GRAPHICS_API_OPENGL)
-  stbi_flip_vertically_on_write(1);
-#endif
 
   udFilename temp(pFilename);
   if (!udStrBeginsWithi(pFilename, pProgramState->settings.pSaveFilePath))
     temp.SetFromFullPath("%s%s", pProgramState->settings.pSaveFilePath, pFilename);
-  
-  temp.SetExtension(ScreenshotExportFormats[pProgramState->settings.screenshot.format]);
+
+  temp.SetExtension(ScreenshotExportFormats[(int)pProgramState->settings.screenshot.format]);
   temp = vcSettings_SequentialFilename(temp.GetPath());
 
-  switch (pProgramState->settings.screenshot.format)
-  {
-  case vcIF_PNG:
-    stbi_write_png(temp.GetPath(), pProgramState->sceneResolution.x, pProgramState->sceneResolution.y, 4, pProgramState->settings.screenshot.pPixels, pProgramState->sceneResolution.x * 4);
-    break;
-
-  case vcIF_BMP:
-    stbi_write_bmp(temp.GetPath(), pProgramState->sceneResolution.x, pProgramState->sceneResolution.y, 4, pProgramState->settings.screenshot.pPixels);
-    break;
-
-  case vcIF_TGA:
-    stbi_write_tga(temp.GetPath(), pProgramState->sceneResolution.x, pProgramState->sceneResolution.y, 4, pProgramState->settings.screenshot.pPixels);
-    break;
-
-  case vcIF_JPG:
-    stbi_write_jpg(temp.GetPath(), pProgramState->sceneResolution.x, pProgramState->sceneResolution.y, 4, pProgramState->settings.screenshot.pPixels, 100);
-    break;
-
-  }
+  vcTexture_SaveImage(pProgramState->screenshot.pImage, vcRender_GetSceneFramebuffer(pProgramState->pRenderContext), temp.GetPath(), vcImageFormats::vcIF_JPG);
+  vcFramebuffer_Bind(pProgramState->pDefaultFramebuffer);
 
   if (pProgramState->settings.screenshot.viewShot)
-  {
-    if (pProgramState->image[0].pImage != nullptr)
-      vcTexture_Destroy(&pProgramState->image[0].pImage);
+    pProgramState->pLoadImage = udStrdup(temp.GetPath());
 
-    vcTexture_Create(&pProgramState->image[0].pImage, pProgramState->sceneResolution.x, pProgramState->sceneResolution.y, pProgramState->settings.screenshot.pPixels, vcTextureFormat_RGBA8);
-    pProgramState->image[0].width = int(pProgramState->sceneResolution.x * .75);
-    pProgramState->image[0].height = int(pProgramState->sceneResolution.y * .75);
-    vcModals_OpenModal(pProgramState, vcMT_ImageViewer);
-
-    pProgramState->destroyImage = true;
-  }
-
-  udFree(pProgramState->settings.screenshot.pPixels);
   pProgramState->settings.screenshot.taking = false;
 
   return true;
@@ -632,7 +592,7 @@ void vcMain_MainLoop(vcState *pProgramState)
 
     if (pProgramState->pLoadImage != nullptr)
     {
-      vcTexture_Destroy(&pProgramState->image[0].pImage);
+      vcTexture_Destroy(&pProgramState->image.pImage);
 
       void *pFileData = nullptr;
       int64_t fileLen = -1;
@@ -640,11 +600,14 @@ void vcMain_MainLoop(vcState *pProgramState)
       if (udFile_Load(pProgramState->pLoadImage, &pFileData, &fileLen) == udR_Success && fileLen != 0)
       {
         int comp;
-        stbi_uc *pImg = stbi_load_from_memory((stbi_uc*)pFileData, (int)fileLen, &pProgramState->image[0].width, &pProgramState->image[0].height, &comp, 4);
+        stbi_uc *pImg = stbi_load_from_memory((stbi_uc*)pFileData, (int)fileLen, &pProgramState->image.width, &pProgramState->image.height, &comp, 4);
 
-        vcTexture_Create(&pProgramState->image[0].pImage, pProgramState->image[0].width, pProgramState->image[0].height, pImg);
+        vcTexture_Create(&pProgramState->image.pImage, pProgramState->image.width, pProgramState->image.height, pImg);
 
         stbi_image_free(pImg);
+
+        pProgramState->image.width = pProgramState->sceneResolution.x;
+        pProgramState->image.height = pProgramState->sceneResolution.y;
       }
 
       udFree(pFileData);
@@ -1001,9 +964,6 @@ int main(int argc, char **args)
   vcSettings_Save(&programState.settings);
 
 epilogue:
-  if (programState.settings.screenshot.taking)
-    programState.image[1].pImage = nullptr;
-
   udFree(programState.pReleaseNotes);
   programState.projects.Destroy();
 
@@ -1038,8 +998,7 @@ epilogue:
   vcSession_Logout(&programState);
 
   vcProject_Deinit(&programState, &programState.activeProject);
-  vcTexture_Destroy(&programState.image[0].pImage);
-  vcTexture_Destroy(&programState.image[1].pImage);
+  vcTexture_Destroy(&programState.image.pImage);
 
   vcGLState_Deinit();
   udThread_DestroyCached();
@@ -1393,7 +1352,7 @@ void vcRenderSceneWindow(vcState *pProgramState)
   renderData.mouse.position.x = (uint32_t)(io.MousePos.x - windowPos.x);
   renderData.mouse.position.y = (uint32_t)(io.MousePos.y - windowPos.y);
   renderData.mouse.clicked = io.MouseClicked[1];
-  
+
   udDouble3 cameraMoveOffset = udDouble3::zero();
 
   if (!pProgramState->settings.screenshot.taking && (pProgramState->sceneResolution.x != windowSize.x || pProgramState->sceneResolution.y != windowSize.y)) //Resize buffers
@@ -1436,7 +1395,7 @@ void vcRenderSceneWindow(vcState *pProgramState)
     ImGui::ImageButton(renderData.pSceneTexture, windowSize, uv0, uv1, 0);
 
     if (pProgramState->settings.screenshot.taking)
-      pProgramState->image[1].pImage = renderData.pSceneTexture;
+      pProgramState->screenshot.pImage = renderData.pSceneTexture;
 
     static bool wasContextMenuOpenLastFrame = false;
     bool selectItem = (io.MouseDragMaxDistanceSqr[0] < (io.MouseDragThreshold*io.MouseDragThreshold)) && ImGui::IsMouseReleased(0) && ImGui::IsItemHovered();
@@ -1994,8 +1953,8 @@ int vcMainMenuGui(vcState *pProgramState)
 
       if (ImGui::MenuItem(vcString::Get("screenshotTake"), nullptr, nullptr))
       {
-        pProgramState->settings.screenshot.taking = true;
-        vcMain_TakeScreenshot(pProgramState, pProgramState->settings.screenshot.outputName);
+        if (!vcMain_TakeScreenshot(pProgramState, pProgramState->settings.screenshot.outputName));
+          // TODO: Error
       }
 
       ImGui::EndMenu();
@@ -2321,8 +2280,8 @@ void vcRenderWindow(vcState *pProgramState)
 
   if (ImGui::IsKeyPressed(SDL_SCANCODE_F8, false) || pProgramState->settings.screenshot.taking)
   {
-    pProgramState->settings.screenshot.taking = true;
-    vcMain_TakeScreenshot(pProgramState, pProgramState->settings.screenshot.outputName);
+    if (!vcMain_TakeScreenshot(pProgramState, pProgramState->settings.screenshot.outputName));
+      // TODO: Error
   }
 
   if (vcHotkey::IsPressed(vcB_BindingsInterface))

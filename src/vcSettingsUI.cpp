@@ -471,7 +471,7 @@ void vcSettingsUI_Show(vcState *pProgramState)
 
       // Output format
       ImGui::Combo(vcString::Get("settingsScreenshotFormatLabel"), (int*)&pProgramState->settings.screenshot.format, ScreenshotExportFormats, 4);
-      ImGui::InputText(vcString::Get("settingsScreenshotFilename"), pProgramState->settings.screenshot.outputName, udLengthOf(pProgramState->settings.screenshot.outputName));
+      ImGui::InputText(vcString::Get("settingsScreenshotFilename"), pProgramState->settings.screenshot.outputName, sizeof(pProgramState->settings.screenshot.outputName));
     }
   }
   

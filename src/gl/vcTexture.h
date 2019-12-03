@@ -4,6 +4,8 @@
 #include "udPlatform.h"
 #include "udMath.h"
 
+enum class vcImageFormats;
+
 enum vcTextureFormat
 {
   vcTextureFormat_Unknown,
@@ -71,5 +73,7 @@ bool vcTexture_EndReadPixels(vcTexture *pTexture, uint32_t x, uint32_t y, uint32
 // Downsample a CPU pixel buffer to a desired size. Maintains aspect ratio.
 // Will fail if width and height are <= targetSize. On failure, will not allocate any memory.
 udResult vcTexture_ResizePixels(const void *pPixels, uint32_t width, uint32_t height, uint32_t targetSize, const void **ppResultPixels, uint32_t *pResultWidth, uint32_t *pResultHeight);
+
+udResult vcTexture_SaveImage(vcTexture *pTexture, vcFramebuffer *pFramebuffer, const char *pFilename, vcImageFormats format);
 
 #endif//vcTexture_h__

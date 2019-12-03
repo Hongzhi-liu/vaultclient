@@ -3,19 +3,14 @@
 ## Changelist
 - Version 0.5.0
   - Added:
-    - Menus
-      - `menuBindings`, `settingsAppearanceSaturation`
-    - Bindings Interface
-      - `bindingsModalTitle`, `bindingsModalClose`, `bindingsModalSave`, `bindingsModalDefaults`, `bindingsColumnName`, `bindingsColumnKeyCombination`, `bindingsColumnDescriptions`, `bindingsErrorUnbound`, `bindingsClear`
-    - Bindings Key Descriptions
-      - `bindingsLockAltitude`, `bindingsGizmoTranslate`, `bindingsGizmoRotate`, `bindingsGizmoScale`, `bindingsGizmoLocalSpace`, `bindingsFullscreen`, `bindingsAddUDS`, `bindingsRemove`, `bindingsCameraForward`, `bindingsCameraBackward`, `bindingsCameraLeft`, `bindingsCameraRight`, `bindingsCameraUp`, `bindingsCameraDown`, `bindingsBindingsInterface`, `bindingsClose`, `bindingsRenameSceneItem`, `bindingsSave`, `bindingsLoad`
-    - Scene
+    - `settingsScreenshot`, `settingsScreenshotHideLabels`, `settingsScreenshotResLabel`, `settingsScreenshotRes720p`, `settingsScreenshotRes1080p`, `settingsScreenshotRes4K`, `settingsScreenshotFormatLabel`, `settingsScreenshotFilename`, `settingsScreenshotView`, `screenshotTake`, `screenshotDefaultName`    - Scene
       - `sceneCameraAttachmentWarning`, `sceneCameraAttachmentDetach`
     - Polygon Meshes
       - `polyModelCullFace`, `polyModelCullFaceBack`, `polyModelCullFaceFront`, `polyModelCullFaceNone`, `polyModelIgnoreTint`
   - Changed:
     - 
   - Removed:
+    - `sceneLockAltitudeKey`, `sceneGizmoTranslateKey`, `sceneGizmoRotateKey`, `sceneGizmoScaleKey`, `sceneGizmoLocalSpaceKey`, `sceneFullscreenKey`, `sceneMapModeKey`, `sceneExplorerRemoveKey`, `sceneExplorerAddUDSKey`
     - Legacy Key Bindings
 	    - `sceneLockAltitudeKey`, `sceneGizmoTranslateKey`, `sceneGizmoRotateKey`, `sceneGizmoScaleKey`, `sceneGizmoLocalSpaceKey`, `sceneFullscreenKey`, `sceneMapModeKey`, `sceneExplorerRemoveKey`, `sceneExplorerAddUDSKey`
     - Other

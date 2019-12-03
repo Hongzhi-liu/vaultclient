@@ -16,6 +16,8 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
+struct vcTexture;
+
 enum vcMapTileBlendMode
 {
   vcMTBM_Hybrid,
@@ -97,20 +99,23 @@ enum vcTileRendererFlags
   vcTRF_OnlyRequestVisibleTiles = 0x1,
 };
 
-enum vcImageFormats
-{
-  vcIF_PNG,
-  vcIF_BMP,
-  vcIF_TGA,
-  vcIF_JPG
-};
-
-enum vcImageResolutions
+enum vcScreenshotOutputResolution
 {
   vcIR_720p,
   vcIR_1080p,
-  vcIR_4k
+  vcIR_4k,
+  vcIR_SceneSize
 };
+
+enum class vcImageFormats
+{
+  vcIF_PNG,
+  vcIF_JPG
+};
+
+static udUInt2 ScreenshotResolutions[] = { {1280, 720}, {1920, 1080}, {4096, 2160}, {1920, 1080} };
+static const char *ScreenshotResolutionStrings[4] = { "720", "1080", "4k", "Scene" };
+static const char *ScreenshotExportFormats[2] = { ".PNG", ".JPG" };
 
 struct vcLanguageOption
 {
@@ -281,13 +286,12 @@ struct vcSettings
   struct
   {
     bool taking;
-    bool resize;
     uint8_t* pPixels;
 
     bool viewShot;
     bool hideLabels;
     vcImageFormats format;
-    vcImageResolutions res;
+    vcScreenshotOutputResolution res;
     char outputName[vcMaxPathLength];
   } screenshot;
 
@@ -353,8 +357,6 @@ const float vcSL_ContourDistanceMin = 0.f;
 const float vcSL_ContourDistanceMax = 100.f;
 const float vcSL_ContourBandHeightMin = 0.f;
 const float vcSL_ContourBandHeightMax = 10.f;
-
-const udUInt2 ScreenshotResolutions[3] = { {1280, 720}, {1920, 1080}, {4096, 2160} };
 
 udFilename vcSettings_SequentialFilename(const char* pName);
 
