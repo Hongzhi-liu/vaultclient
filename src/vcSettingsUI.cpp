@@ -470,7 +470,7 @@ void vcSettingsUI_Show(vcState *pProgramState)
       ImGui::Checkbox(vcString::Get("settingsScreenshotView"), &pProgramState->settings.screenshot.viewShot);
 
       // Output format
-      ImGui::Combo(vcString::Get("settingsScreenshotFormatLabel"), (int*)&pProgramState->settings.screenshot.format, ScreenshotExportFormats, udLengthOf(ScreenshotExportFormats));
+      ImGui::Combo(vcString::Get("settingsScreenshotFormatLabel"), (int*)&pProgramState->settings.screenshot.format, ScreenshotExportFormats, (int)udLengthOf(ScreenshotExportFormats));
       ImGui::InputText(vcString::Get("settingsScreenshotFilename"), pProgramState->settings.screenshot.outputName, sizeof(pProgramState->settings.screenshot.outputName));
     }
   }

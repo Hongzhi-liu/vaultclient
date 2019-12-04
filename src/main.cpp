@@ -1954,8 +1954,8 @@ int vcMainMenuGui(vcState *pProgramState)
       if (ImGui::MenuItem(vcString::Get("screenshotTake"), nullptr, nullptr))
       {
         ScreenshotResolutions[3] = pProgramState->sceneResolution;
-        if (!vcMain_TakeScreenshot(pProgramState, pProgramState->settings.screenshot.outputName));
-          // TODO: Error
+        vcMain_TakeScreenshot(pProgramState, pProgramState->settings.screenshot.outputName);
+        // TODO: if (!take) Error
       }
 
       ImGui::EndMenu();
@@ -2282,8 +2282,8 @@ void vcRenderWindow(vcState *pProgramState)
   if (ImGui::IsKeyPressed(SDL_SCANCODE_F8, false) || pProgramState->settings.screenshot.taking)
   {
     ScreenshotResolutions[3] = pProgramState->sceneResolution;
-    if (!vcMain_TakeScreenshot(pProgramState, pProgramState->settings.screenshot.outputName));
-      // TODO: Error
+    vcMain_TakeScreenshot(pProgramState, pProgramState->settings.screenshot.outputName);
+    // TODO: if (!take) error
   }
 
   if (vcHotkey::IsPressed(vcB_BindingsInterface))
