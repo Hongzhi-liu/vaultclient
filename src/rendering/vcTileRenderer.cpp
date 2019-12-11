@@ -656,7 +656,7 @@ bool vcTileRenderer_RecursiveBuildRenderQueue(vcTileRenderer *pTileRenderer, vcQ
     for (int c = 0; c < 4; ++c)
     {
       vcQuadTreeNode *pChildNode = &pTileRenderer->quadTree.nodes.pPool[pNode->childBlockIndex + c];
-      childrenNeedThisTileRendered = !vcTileRenderer_RecursiveBuildRenderQueue(pTileRenderer, pChildNode, canParentDraw || vcTileRenderer_CanNodeDraw(pChildNode)) || childrenNeedThisTileRendered;
+      vcTileRenderer_RecursiveBuildRenderQueue(pTileRenderer, pChildNode, canParentDraw || vcTileRenderer_CanNodeDraw(pChildNode));
     }
   }
 
@@ -736,8 +736,8 @@ void vcTileRenderer_Render(vcTileRenderer *pTileRenderer, const udDouble4x4 &vie
   vcTileRenderer_DrawRenderQueue(pTileRenderer, viewWithMapTranslation);
 
   // Render the root tile again (if it hasn't already been rendered normally) to cover up gaps between tiles
-  if (!pRootNode->rendered && pRootNode->renderInfo.pTexture && vcTileRenderer_NodeHasValidBounds(pRootNode))
-    vcTileRenderer_DrawNode(pTileRenderer, pRootNode, pTileRenderer->pFullTileMesh, viewWithMapTranslation, false);
+  //if (!pRootNode->rendered && pRootNode->renderInfo.pTexture && vcTileRenderer_NodeHasValidBounds(pRootNode))
+  //  vcTileRenderer_DrawNode(pTileRenderer, pRootNode, pTileRenderer->pFullTileMesh, viewWithMapTranslation, false);
 
   // Draw transparent tiles
   if (pTileRenderer->pTransparentTiles->size() > 0)
