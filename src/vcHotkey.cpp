@@ -71,13 +71,9 @@ namespace vcHotkey
     "bindingsSelectKey"
   };
 
-
   bool IsDown(int keyNum)
   {
-    if (target != -1)
-      return false;
-
-    return ImGui::GetIO().KeysDown[keyNum];
+    return ImGui::GetIO().KeysDown[keyNum & 0x1FF];
   }
 
   bool IsDown(vcBind key)
@@ -119,7 +115,7 @@ namespace vcHotkey
 
     int mappedKey = keyBinds[key];
 
-    const char *pStrings[5] = {};
+    const char *pStrings[6] = {};
 
     if ((mappedKey & vcMOD_Shift) == vcMOD_Shift)
       pStrings[0] = "Shift + ";
@@ -152,8 +148,8 @@ namespace vcHotkey
     }
 
     pStrings[4] = SDL_GetScancodeName((SDL_Scancode)(mappedKey & 0x1FF));
-   
-    vcStringFormat(pBuffer, bufferLen, "{0}{1}{2}{3}{4}", pStrings, 5);
+    pStrings[5] = key >= vcB_Forward && key <= vcB_Down ? ", Shift Spd++, Ctrl Spd--" : "";
+    vcStringFormat(pBuffer, bufferLen, "{0}{1}{2}{3}{4}{5}", pStrings, 5);
   }
 
   vcBind BindFromName(const char* pName)
@@ -237,8 +233,8 @@ namespace vcHotkey
 
     ImGui::Columns(3);
     ImGui::SetColumnWidth(0, 125);
-    ImGui::SetColumnWidth(1, 125);
-    ImGui::SetColumnWidth(2, 650);
+    ImGui::SetColumnWidth(1, 175);
+    ImGui::SetColumnWidth(2, 600);
 
     // Header Row
     ImGui::SetWindowFontScale(1.05f);
@@ -280,7 +276,7 @@ namespace vcHotkey
 
       ImGui::NextColumn();
 
-      char key[50];
+      char key[100];
       GetKeyName((vcBind)i, key, (uint32_t)udLengthOf(key));
       ImGui::TextUnformatted(key);
 
