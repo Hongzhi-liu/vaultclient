@@ -26,6 +26,7 @@ layout (std140) uniform u_fragParams
   vec4 u_screenParams;  // sampleStepSizex, sampleStepSizeY, near plane, far plane
   mat4 u_inverseViewProjection;
   mat4 u_inverseProjection;
+  mat4 u_projection;
 
   // outlining
   vec4 u_outlineColour;
@@ -161,6 +162,29 @@ void main()
 
   out_Colour = vec4(col.xyz, 1.0);
   gl_FragDepth = depth;
+
+  float farplane = 10000.0;
+  float Fcoef = 2.0 / log2(farplane + 1.0);
+
+  //z = pow(2,(LogDepthValue + 1.0)/Fcoef) - 1.0
+  //z + 1 = pow(2,(LogDepthValue + 1.0)/Fcoef);
+  //(LogDepthValue + 1.0)/Fcoef = log2(z + 1) / log2(2.0);
+  //(LogDepthValue + 1.0) = (log2(z + 1) / log2(2.0)) * Fcoef;
+  // LogDepthValue = ((log2(z + 1) / log2(2.0)) * Fcoef) - 1.0;
+
+  //if (depth < 1.0)
+  //  gl_FragDepth = ((log2(depth + 1) / log2(2.0)) * Fcoef) - 1.0;
+  //gl_FragDepth = log2(depth + 1.0);
+
+ // float farplane = 10000.0;
+ // float Fcoef = 2.0 / log2(farplane + 1.0);
+  //gl_FragDepth = log2(flogz) * (0.5 * Fcoef);
+
+  if (depth < 1.0)
+{
+  vec4 pos = u_projection * fragEyePosition;
+  gl_FragDepth = (log2(1.0 + pos.w) * (0.5 * Fcoef));
+}
 }
 
 )shader";
