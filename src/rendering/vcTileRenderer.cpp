@@ -69,6 +69,7 @@ struct vcTileRenderer
       udFloat4x4 projectionMatrix;
       udFloat4 eyePositions[TileVertexResolution * TileVertexResolution];
       udFloat4 colour;
+      udFloat4 farPlane;
     } everyObject;
   } presentShader;
 };
@@ -598,6 +599,7 @@ bool vcTileRenderer_DrawNode(vcTileRenderer *pTileRenderer, vcQuadTreeNode *pNod
     pTileRenderer->presentShader.everyObject.eyePositions[t] = eyeSpaceVertexPosition;
   }
 
+  pTileRenderer->presentShader.everyObject.farPlane.x = pTileRenderer->pSettings->camera.farPlane;
   pTileRenderer->presentShader.everyObject.colour = udFloat4::create(1.f, 1.f, 1.f, tileTransparency);
 #if VISUALIZE_DEBUG_TILES
   pTileRenderer->presentShader.everyObject.colour.w = 1.0f;

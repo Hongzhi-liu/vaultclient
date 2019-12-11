@@ -99,7 +99,7 @@ void vcSceneLayerRenderer_RenderNode(vcSceneLayerRenderer *pSceneLayerRenderer, 
     else if (pColourOverride != nullptr)
       passType = vcPMP_ColourOnly;
 
-    vcPolygonModel_Render(pNode->pGeometryData[geometry].pModel, pSceneLayerRenderer->worldMatrix * pNode->pGeometryData[geometry].originMatrix, pSceneLayerRenderer->viewProjectionMatrix, passType, pDrawTexture, pColourOverride);
+    vcPolygonModel_Render(pSceneLayerRenderer->farPlane, pNode->pGeometryData[geometry].pModel, pSceneLayerRenderer->worldMatrix * pNode->pGeometryData[geometry].originMatrix, pSceneLayerRenderer->viewProjectionMatrix, passType, pDrawTexture, pColourOverride);
 
     // TODO: (EVC-542) other geometry types
   }
@@ -153,7 +153,7 @@ bool vcSceneLayerRenderer_RecursiveRender(vcSceneLayerRenderer *pSceneLayerRende
   return allChildrenWereRendered && !shouldRender;
 }
 
-bool vcSceneLayerRenderer_Render(vcSceneLayerRenderer *pSceneLayerRenderer, const udDouble4x4 &worldMatrix, const udDouble4x4 &viewProjectionMatrix, const udDouble3 &cameraPosition, const udUInt2 &screenResolution, const udFloat4 *pColourOverride /*= nullptr*/, bool shadowsPass /*= false*/)
+bool vcSceneLayerRenderer_Render(vcSceneLayerRenderer *pSceneLayerRenderer, const udDouble4x4 &worldMatrix, const udDouble4x4 &viewProjectionMatrix, const udDouble3 &cameraPosition, const udUInt2 &screenResolution, float farPlane, const udFloat4 *pColourOverride /*= nullptr*/, bool shadowsPass /*= false*/)
 {
   if (pSceneLayerRenderer == nullptr)
     return false;
@@ -162,6 +162,7 @@ bool vcSceneLayerRenderer_Render(vcSceneLayerRenderer *pSceneLayerRenderer, cons
   pSceneLayerRenderer->worldMatrix = worldMatrix;
   pSceneLayerRenderer->viewProjectionMatrix = viewProjectionMatrix;
   pSceneLayerRenderer->worldViewProjectionMatrix = pSceneLayerRenderer->viewProjectionMatrix * pSceneLayerRenderer->worldMatrix;
+  pSceneLayerRenderer->farPlane = farPlane;
 
   // TODO: (EVC-548) This is duplicated work across i3s models
   // extract frustum planes
