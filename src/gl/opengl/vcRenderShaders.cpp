@@ -163,7 +163,7 @@ void main()
   out_Colour = vec4(col.xyz, 1.0);
   gl_FragDepth = depth;
 
-  float farplane = 10000.0;
+  float farplane = 100000.0;
   float Fcoef = 2.0 / log2(farplane + 1.0);
 
   //z = pow(2,(LogDepthValue + 1.0)/Fcoef) - 1.0
@@ -176,7 +176,7 @@ void main()
   //  gl_FragDepth = ((log2(depth + 1) / log2(2.0)) * Fcoef) - 1.0;
   //gl_FragDepth = log2(depth + 1.0);
 
- // float farplane = 10000.0;
+ // float farplane = 100000.0;
  // float Fcoef = 2.0 / log2(farplane + 1.0);
   //gl_FragDepth = log2(flogz) * (0.5 * Fcoef);
 
@@ -408,7 +408,7 @@ void main()
   vec4 col = texture(u_texture, v_uv);
   out_Colour = vec4(col.xyz * v_colour.xyz, v_colour.w);
 
-  float farplane = 10000.0;
+  float farplane = 100000.0;
   float Fcoef = 2.0 / log2(farplane + 1.0);
   gl_FragDepth = log2(flogz) * (0.5 * Fcoef);
 }
@@ -435,7 +435,7 @@ layout (std140) uniform u_EveryObject
 
   float LogZ(vec4 pos)
   {
-    float farPlane = 10000;
+    float farPlane = 100000.0;
     float Fcoef  = 2.0 / log2(farPlane + 1.0);
     return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
   }
@@ -811,7 +811,7 @@ const char *const g_PolygonP3N3UV2FragmentShader = FRAG_HEADER R"shader(
 
     out_Colour = vec4(diffuse, diffuseColour.a);
 
-    float farPlane = 10000;
+    float farPlane = 100000;
     float Fcoef  = 2.0 / log2(farPlane + 1.0);
     gl_FragDepth = log2(flogz) * (0.5 * Fcoef);
   }
@@ -839,7 +839,7 @@ const char *const g_PolygonP3N3UV2VertexShader = VERT_HEADER R"shader(
 
   float LogZ(vec4 pos)
   {
-    float farPlane = 10000;
+    float farPlane = 100000.0;
     float Fcoef  = 2.0 / log2(farPlane + 1.0);
     return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
   }
