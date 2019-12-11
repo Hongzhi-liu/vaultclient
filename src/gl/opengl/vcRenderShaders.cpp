@@ -181,10 +181,12 @@ void main()
   //gl_FragDepth = log2(flogz) * (0.5 * Fcoef);
 
   if (depth < 1.0)
-{
-  vec4 pos = u_projection * fragEyePosition;
-  gl_FragDepth = (log2(1.0 + pos.w) * (0.5 * Fcoef));
-}
+  {
+    //vec4 pos = u_projection * fragEyePosition;
+    //gl_FragDepth = (log2(1.0 + pos.w) * (0.5 * Fcoef));
+
+    // this is how depth is normally calculated: depth = pos.z / pos.w;
+  }
 }
 
 )shader";
