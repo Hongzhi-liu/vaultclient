@@ -370,6 +370,7 @@ const char *const g_tileFragmentShader = FRAG_HEADER R"shader(
 //Input Format
 in vec4 v_colour;
 in vec2 v_uv;
+in float flogz;
 
 //Output Format
 out vec4 out_Colour;
@@ -380,6 +381,10 @@ void main()
 {
   vec4 col = texture(u_texture, v_uv);
   out_Colour = vec4(col.xyz * v_colour.xyz, v_colour.w);
+
+  float farplane = 10000.0;
+  float Fcoef = 2.0 / log2(farplane + 1.0);
+  gl_FragDepth = log2(flogz) * (0.5 * Fcoef);
 }
 )shader";
 
@@ -390,6 +395,7 @@ layout(location = 0) in vec3 a_uv;
 //Output Format
 out vec4 v_colour;
 out vec2 v_uv;
+out float flogz;
 
 // This should match CPU struct size
 #define VERTEX_COUNT 2
@@ -401,6 +407,13 @@ layout (std140) uniform u_EveryObject
   vec4 u_colour;
 };
 
+  float LogZ(vec4 pos)
+  {
+    float farPlane = 10000;
+    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
+  }
+
 void main()
 {
   // TODO: could have precision issues on some devices
@@ -409,6 +422,8 @@ void main()
   v_uv = a_uv.xy;
   v_colour = u_colour;
   gl_Position = finalClipPos;
+  flogz = 1.0 + gl_Position.w;
+  gl_Position.z = LogZ(gl_Position);
 }
 )shader";
 
@@ -751,6 +766,7 @@ const char *const g_PolygonP3N3UV2FragmentShader = FRAG_HEADER R"shader(
   in vec2 v_uv;
   in vec4 v_colour;
   in vec3 v_normal;
+  in float flogz;
 
   //Output Format
   out vec4 out_Colour;
@@ -768,6 +784,10 @@ const char *const g_PolygonP3N3UV2FragmentShader = FRAG_HEADER R"shader(
     vec3 diffuse = diffuseColour.xyz * ndotl;
 
     out_Colour = vec4(diffuse, diffuseColour.a);
+
+    float farPlane = 10000;
+    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    gl_FragDepth = log2(flogz) * (0.5 * Fcoef);
   }
 )shader";
 
@@ -782,6 +802,7 @@ const char *const g_PolygonP3N3UV2VertexShader = VERT_HEADER R"shader(
   out vec2 v_uv;
   out vec4 v_colour;
   out vec3 v_normal;
+  out float flogz;
 
   layout (std140) uniform u_EveryObject
   {
@@ -790,12 +811,21 @@ const char *const g_PolygonP3N3UV2VertexShader = VERT_HEADER R"shader(
     vec4 u_colour;
   };
 
+  float LogZ(vec4 pos)
+  {
+    float farPlane = 10000;
+    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
+  }
+
   void main()
   {
     // making the assumption that the model matrix won't contain non-uniform scale
     vec3 worldNormal = normalize((u_worldMatrix * vec4(a_normal, 0.0)).xyz);
 
     gl_Position = u_worldViewProjectionMatrix * vec4(a_pos, 1.0);
+    gl_Position.z = LogZ(gl_Position);
+    flogz = 1.0 + gl_Position.w;
 
     v_uv = a_uv;
     v_normal = worldNormal;
