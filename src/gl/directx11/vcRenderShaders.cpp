@@ -433,15 +433,29 @@ const char *const g_tileFragmentShader = R"shader(
     float4 pos : SV_POSITION;
     float4 colour : COLOR0;
     float2 uv : TEXCOORD0;
+    float2 flogz : TEXCOORD1;
+  };
+
+  struct PS_OUTPUT
+  {
+    float4 Color0 : SV_Target;
+    float Depth0 : SV_Depth;
   };
 
   sampler sampler0;
   Texture2D texture0;
 
-  float4 main(PS_INPUT input) : SV_Target
+  PS_OUTPUT main(PS_INPUT input)
   {
+    PS_OUTPUT output;
     float4 col = texture0.Sample(sampler0, input.uv);
-    return float4(col.xyz * input.colour.xyz, input.colour.w);
+
+    float farplane = input.flogz.y;
+    float Fcoef = 2.0 / log2(farplane + 1.0);
+    output.Depth0 = log2(input.flogz.x) * (0.5 * Fcoef);
+
+    output.Color0 = float4(col.xyz * input.colour.xyz, input.colour.w);   
+    return output;
   }
 )shader";
 
@@ -456,6 +470,7 @@ const char *const g_tileVertexShader = R"shader(
     float4 pos : SV_POSITION;
     float4 colour : COLOR0;
     float2 uv : TEXCOORD0;
+    float2 flogz : TEXCOORD1;
   };
 
   // This should match CPU struct size
@@ -466,6 +481,7 @@ const char *const g_tileVertexShader = R"shader(
     float4x4 u_projection;
     float4 u_eyePositions[VERTEX_COUNT * VERTEX_COUNT];
     float4 u_colour;
+    float4 u_farPlane;
   };
 
   PS_INPUT main(VS_INPUT input)
@@ -478,6 +494,9 @@ const char *const g_tileVertexShader = R"shader(
     output.colour = u_colour;
     output.uv = input.pos.xy;
     output.pos = finalClipPos;
+
+    output.flogz.x = 1.0 + output.pos.w;
+    output.flogz.y = u_farPlane.x;
     return output;
   }
 )shader";
@@ -878,13 +897,21 @@ const char *const g_PolygonP3N3UV2FragmentShader = R"shader(
     float2 uv : TEXCOORD0;
     float3 normal : NORMAL;
     float4 colour : COLOR0;
+    float2 flogz : TEXCOORD1;
+  };
+
+  struct PS_OUTPUT
+  {
+    float4 Color0 : SV_Target;
+    float Depth0 : SV_Depth;
   };
 
   sampler sampler0;
   Texture2D texture0;
 
-  float4 main(PS_INPUT input) : SV_Target
+  PS_OUTPUT main(PS_INPUT input)
   {
+    PS_OUTPUT output;
     float4 col = texture0.Sample(sampler0, input.uv);
     float4 diffuseColour = col * input.colour;
 
@@ -893,7 +920,13 @@ const char *const g_PolygonP3N3UV2FragmentShader = R"shader(
     float ndotl = dot(input.normal, lightDirection) * 0.5 + 0.5;
     float3 diffuse = diffuseColour.xyz * ndotl;
 
-    return float4(diffuse, diffuseColour.a);
+    output.Color0 = float4(diffuse, diffuseColour.a);
+
+    float farPlane = input.flogz.y;
+    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    output.Depth0 = log2(input.flogz.x) * (0.5 * Fcoef);
+
+    return output;
   }
 )shader";
 
@@ -912,6 +945,7 @@ const char *const g_PolygonP3N3UV2VertexShader = R"shader(
     float2 uv  : TEXCOORD0;
     float3 normal : NORMAL;
     float4 colour : COLOR0;
+    float2 flogz : TEXCOORD1;
   };
 
   cbuffer u_EveryObject : register(b0)
@@ -919,6 +953,7 @@ const char *const g_PolygonP3N3UV2VertexShader = R"shader(
     float4x4 u_worldViewProjectionMatrix;
     float4x4 u_worldMatrix;
     float4 u_colour;
+    float4 u_farPlane;
   };
 
   PS_INPUT main(VS_INPUT input)
@@ -932,6 +967,9 @@ const char *const g_PolygonP3N3UV2VertexShader = R"shader(
     output.uv = input.uv;
     output.normal = worldNormal;
     output.colour = u_colour;// * input.colour;
+
+    output.flogz.x = 1.0 + output.pos.w;
+    output.flogz.y = u_farPlane.x;
 
     return output;
   }
