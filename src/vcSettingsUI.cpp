@@ -126,8 +126,8 @@ void vcSettingsUI_Show(vcState *pProgramState)
 
     if (openedHeader)
     {
-      if (ImGui::SliderFloat(vcString::Get("settingsViewportViewDistance"), &pProgramState->settings.camera.farPlane, vcSL_CameraFarPlaneMin, vcSL_CameraFarPlaneMax, "%.3fm", 2.f))
-        pProgramState->settings.camera.nearPlane = pProgramState->settings.camera.farPlane * vcSL_CameraFarToNearPlaneRatio;
+      //if (ImGui::SliderFloat(vcString::Get("settingsViewportViewDistance"), &pProgramState->settings.camera.farPlane, vcSL_CameraFarPlaneMin, vcSL_CameraFarPlaneMax, "%.3fm", 2.f))
+      //  pProgramState->settings.camera.nearPlane = 0.1f;//pProgramState->settings.camera.farPlane *vcSL_CameraFarToNearPlaneRatio;
 
       const char *lensNameArray[] = {
         vcString::Get("settingsViewportCameraLensCustom"),

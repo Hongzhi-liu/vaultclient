@@ -169,8 +169,8 @@ bool vcSettings_Load(vcSettings *pSettings, bool forceReset /*= false*/, vcSetti
 
   if (group == vcSC_All || group == vcSC_Viewport)
   {
-    pSettings->camera.nearPlane = data.Get("camera.nearPlane").AsFloat(0.5f);
-    pSettings->camera.farPlane = data.Get("camera.farPlane").AsFloat(10000.f);
+    pSettings->camera.nearPlane = 0.1f;//data.Get("camera.nearPlane").AsFloat(0.5f);
+    pSettings->camera.farPlane = 6000000.0f;//data.Get("camera.farPlane").AsFloat(10000.f);
     pSettings->camera.lensIndex = data.Get("camera.lensId").AsInt(vcLS_30mm);
     pSettings->camera.fieldOfView = data.Get("camera.fieldOfView").AsFloat(vcLens30mm);
   }

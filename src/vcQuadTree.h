@@ -51,7 +51,7 @@ struct vcQuadTreeNode
   bool rendered;
 
   // cached
-  udDouble3 worldBounds[4]; // corners
+  udDouble2 worldBounds[4]; // corners
   udDouble2 tileCenter, tileExtents;
 
   vcNodeRenderInfo renderInfo;
