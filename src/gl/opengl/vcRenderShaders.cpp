@@ -408,6 +408,12 @@ layout (std140) uniform u_EveryObject
   vec4 u_farPlane;
 };
 
+float LogZ(vec4 pos, float farPlane)
+{
+  float Fcoef  = 2.0 / log2(farPlane + 1.0);
+  return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
+}
+
 void main()
 {
   // TODO: could have precision issues on some devices
@@ -419,6 +425,7 @@ void main()
 
   flogz.x = 1.0 + gl_Position.w;
   flogz.y = u_farPlane.x;
+  gl_Position.z = LogZ(gl_Position, u_farPlane.x);
 }
 )shader";
 
@@ -807,12 +814,19 @@ const char *const g_PolygonP3N3UV2VertexShader = VERT_HEADER R"shader(
     vec4 u_farPlane;
   };
 
+  float LogZ(vec4 pos, float farPlane)
+  {
+    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
+  }
+
   void main()
   {
     // making the assumption that the model matrix won't contain non-uniform scale
     vec3 worldNormal = normalize((u_worldMatrix * vec4(a_normal, 0.0)).xyz);
 
     gl_Position = u_worldViewProjectionMatrix * vec4(a_pos, 1.0);
+    gl_Position.z = LogZ(gl_Position, u_farPlane.x);
     flogz.x = 1.0 + gl_Position.w;
     flogz.y = u_farPlane.x;
 

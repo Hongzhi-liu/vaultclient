@@ -484,13 +484,19 @@ const char *const g_tileVertexShader = R"shader(
     float4 u_farPlane;
   };
 
+  float LogZ(float4 pos, float farPlane)
+  {
+    float Fcoef = 1.0 / log2(farPlane + 1.0);
+    return log2(max(1e-6, 1.0 + pos.w)) * Fcoef;
+  }
+
   PS_INPUT main(VS_INPUT input)
   {
     PS_INPUT output;
 
     // note: could have precision issues on some devices
     float4 finalClipPos = mul(u_projection, u_eyePositions[int(input.pos.z)]);
-
+    finalClipPos.z = LogZ(finalClipPos, u_farPlane.x);
     output.colour = u_colour;
     output.uv = input.pos.xy;
     output.pos = finalClipPos;
@@ -956,6 +962,12 @@ const char *const g_PolygonP3N3UV2VertexShader = R"shader(
     float4 u_farPlane;
   };
 
+  float LogZ(float4 pos, float farPlane)
+  {
+    float Fcoef = 1.0 / log2(farPlane + 1.0);
+    return log2(max(1e-6, 1.0 + pos.w)) * Fcoef;
+  }
+
   PS_INPUT main(VS_INPUT input)
   {
     PS_INPUT output;
@@ -964,6 +976,7 @@ const char *const g_PolygonP3N3UV2VertexShader = R"shader(
     float3 worldNormal = normalize(mul(u_worldMatrix, float4(input.normal, 0.0)).xyz);
 
     output.pos = mul(u_worldViewProjectionMatrix, float4(input.pos, 1.0));
+    output.pos.z = LogZ(output.pos, u_farPlane.x);
     output.uv = input.uv;
     output.normal = worldNormal;
     output.colour = u_colour;// * input.colour;
