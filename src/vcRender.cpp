@@ -107,7 +107,7 @@ struct vcRenderContext
 
     struct
     {
-      udFloat4 screenParams;  // sampleStepX, sampleStepSizeY, near plane, far plane
+      udFloat4 screenParams;  // sampleStepX, sampleStepSizeY, (unused), (unused)
       udFloat4x4 inverseViewProjection;
       udFloat4x4 inverseProjection;
 
@@ -706,9 +706,6 @@ void vcRender_VisualizationPass(vcState *pProgramState, vcRenderContext *pRender
   vcShader_BindTexture(pRenderContext->visualizationShader.pProgram, pRenderContext->pTexture[1 - pRenderContext->activeRenderTarget], 0, pRenderContext->visualizationShader.uniform_texture);
   vcShader_BindTexture(pRenderContext->visualizationShader.pProgram, pRenderContext->pDepthTexture[1 - pRenderContext->activeRenderTarget], 1, pRenderContext->visualizationShader.uniform_depth);
 
-  float nearPlane = pProgramState->settings.camera.nearPlane;
-  float farPlane = pProgramState->settings.camera.farPlane;
-
   // edge outlines
   int outlineWidth = pProgramState->settings.postVisualization.edgeOutlines.width;
   float outlineEdgeThreshold = pProgramState->settings.postVisualization.edgeOutlines.threshold;
@@ -750,8 +747,6 @@ void vcRender_VisualizationPass(vcState *pProgramState, vcRenderContext *pRender
   pRenderContext->visualizationShader.fragParams.inverseProjection = udFloat4x4::create(udInverse(pProgramState->camera.matrices.projection));
   pRenderContext->visualizationShader.fragParams.screenParams.x = (1.0f / pRenderContext->sceneResolution.x);
   pRenderContext->visualizationShader.fragParams.screenParams.y = (1.0f / pRenderContext->sceneResolution.y);
-  pRenderContext->visualizationShader.fragParams.screenParams.z = nearPlane;
-  pRenderContext->visualizationShader.fragParams.screenParams.w = farPlane;
   pRenderContext->visualizationShader.fragParams.outlineColour = outlineColour;
   pRenderContext->visualizationShader.fragParams.outlineParams.x = (float)outlineWidth;
   pRenderContext->visualizationShader.fragParams.outlineParams.y = outlineEdgeThreshold;

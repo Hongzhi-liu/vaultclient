@@ -1,15 +1,8 @@
 #include "gl/vcRenderShaders.h"
 #include "udPlatformUtil.h"
+#include "vcCamera.h"
 
-#if UDPLATFORM_IOS || UDPLATFORM_IOS_SIMULATOR || UDPLATFORM_EMSCRIPTEN
-# define FRAG_HEADER "#version 300 es\nprecision highp float;\n"
-# define VERT_HEADER "#version 300 es\n"
-#else
-# define FRAG_HEADER "#version 330 core\n#extension GL_ARB_explicit_attrib_location : enable\n"
-# define VERT_HEADER "#version 330 core\n#extension GL_ARB_explicit_attrib_location : enable\n"
-#endif
-
-const char *const g_VisualizationFragmentShader = FRAG_HEADER R"shader(
+const char *const g_VisualizationFragmentShader = R"shader(
 in vec2 v_uv;
 in vec2 v_edgeSampleUV0;
 in vec2 v_edgeSampleUV1;
@@ -23,7 +16,7 @@ uniform sampler2D u_depth;
 
 layout (std140) uniform u_fragParams
 {
-  vec4 u_screenParams;  // sampleStepSizex, sampleStepSizeY, near plane, far plane
+  vec4 u_screenParams;  // sampleStepSizex, sampleStepSizeY, (unused), (unused)
   mat4 u_inverseViewProjection;
   mat4 u_inverseProjection;
 
@@ -47,10 +40,7 @@ layout (std140) uniform u_fragParams
 
 float linearizeDepth(float depth)
 {
-  float nearPlane = u_screenParams.z;
-  float farPlane = u_screenParams.w;
-
-  return (2.0 * nearPlane) / (farPlane + nearPlane - depth * (farPlane - nearPlane));
+  return (2.0 * s_CameraDefaultNearPlane) / (s_CameraDefaultFarPlane + s_CameraDefaultNearPlane - depth * (s_CameraDefaultFarPlane - s_CameraDefaultNearPlane));
 }
 
 float getNormalizedPosition(float v, float min, float max)
@@ -165,7 +155,7 @@ void main()
 
 )shader";
 
-const char *const g_VisualizationVertexShader = FRAG_HEADER R"shader(
+const char *const g_VisualizationVertexShader = R"shader(
 //Input format
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec2 a_texCoord;
@@ -195,7 +185,7 @@ void main()
 }
 )shader";
 
-const char *const g_ViewShedFragmentShader = FRAG_HEADER R"shader(
+const char *const g_ViewShedFragmentShader = R"shader(
 in vec2 v_uv;
 
 out vec4 out_Colour;
@@ -274,7 +264,7 @@ void main()
 
 )shader";
 
-const char *const g_ViewShedVertexShader = FRAG_HEADER R"shader(
+const char *const g_ViewShedVertexShader = R"shader(
 //Input format
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec2 a_texCoord;
@@ -289,7 +279,7 @@ void main()
 }
 )shader";
 
-const char *const g_udFragmentShader = FRAG_HEADER R"shader(
+const char *const g_udFragmentShader = R"shader(
 //Input Format
 in vec2 v_uv;
 
@@ -318,7 +308,7 @@ R"shader(
 }
 )shader";
 
-const char *const g_udSplatIdFragmentShader = FRAG_HEADER R"shader(
+const char *const g_udSplatIdFragmentShader = R"shader(
 //Input Format
 in vec2 v_uv;
 
@@ -351,7 +341,7 @@ void main()
 }
 )shader";
 
-const char *const g_udVertexShader = VERT_HEADER R"shader(
+const char *const g_udVertexShader = R"shader(
 //Input format
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec2 a_texCoord;
@@ -366,7 +356,7 @@ void main()
 }
 )shader";
 
-const char *const g_tileFragmentShader = FRAG_HEADER R"shader(
+const char *const g_tileFragmentShader = R"shader(
 //Input Format
 in vec4 v_colour;
 in vec2 v_uv;
@@ -382,13 +372,12 @@ void main()
   vec4 col = texture(u_texture, v_uv);
   out_Colour = vec4(col.xyz * v_colour.xyz, v_colour.w);
 
-  float farPlane = 6000000.0;
-  float Fcoef = 2.0 / log2(farPlane + 1.0);
+  float Fcoef = 2.0 / log2(s_CameraDefaultFarPlane + 1.0);
   gl_FragDepth = log2(v_flogz) * (0.5 * Fcoef);
 }
 )shader";
 
-const char *const g_tileVertexShader = VERT_HEADER R"shader(
+const char *const g_tileVertexShader = R"shader(
 //Input format
 layout(location = 0) in vec3 a_uv;
 
@@ -409,8 +398,7 @@ layout (std140) uniform u_EveryObject
 
 float LogZ(vec4 pos)
 {
-  float farPlane = 6000000.0;
-  float Fcoef  = 2.0 / log2(farPlane + 1.0);
+  float Fcoef  = 2.0 / log2(s_CameraDefaultFarPlane + 1.0);
   return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
 }
 
@@ -429,7 +417,7 @@ void main()
 )shader";
 
 
-const char *const g_vcSkyboxVertexShaderPanorama = VERT_HEADER R"shader(
+const char *const g_vcSkyboxVertexShaderPanorama = R"shader(
 //Input format
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec2 a_texCoord;
@@ -444,7 +432,7 @@ void main()
 }
 )shader";
 
-const char *const g_vcSkyboxFragmentShaderPanorama = FRAG_HEADER R"shader(
+const char *const g_vcSkyboxFragmentShaderPanorama = R"shader(
 uniform sampler2D u_texture;
 layout (std140) uniform u_EveryFrame
 {
@@ -476,7 +464,7 @@ void main()
 }
 )shader";
 
-const char *const g_vcSkyboxVertexShaderImageColour = VERT_HEADER R"shader(
+const char *const g_vcSkyboxVertexShaderImageColour = R"shader(
 //Input format
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec2 a_texCoord;
@@ -499,7 +487,7 @@ void main()
 }
 )shader";
 
-const char *const g_vcSkyboxFragmentShaderImageColour = FRAG_HEADER R"shader(
+const char *const g_vcSkyboxFragmentShaderImageColour = R"shader(
 uniform sampler2D u_texture;
 
 //Input Format
@@ -518,7 +506,7 @@ void main()
 )shader";
 
 
-const char *const g_CompassFragmentShader = FRAG_HEADER R"shader(
+const char *const g_CompassFragmentShader = R"shader(
   //Input Format
   in vec4 v_colour;
   in vec3 v_normal;
@@ -540,13 +528,12 @@ const char *const g_CompassFragmentShader = FRAG_HEADER R"shader(
     vec3 sheenColour = vec3(1.0, 1.0, 0.9);
     out_Colour = vec4(v_colour.a * (ndotl * v_colour.xyz + edotr * sheenColour), 1.0);
 
-    float farPlane = 6000000.0;
-    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    float Fcoef  = 2.0 / log2(s_CameraDefaultFarPlane + 1.0);
     gl_FragDepth = log2(v_flogz) * (0.5 * Fcoef);
   }
 )shader";
 
-const char *const g_CompassVertexShader = VERT_HEADER R"shader(
+const char *const g_CompassVertexShader = R"shader(
   //Input Format
   layout(location = 0) in vec3 a_pos;
   layout(location = 1) in vec3 a_normal;
@@ -568,8 +555,7 @@ const char *const g_CompassVertexShader = VERT_HEADER R"shader(
 
   float LogZ(vec4 pos)
   {
-    float farPlane = 6000000.0;
-    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    float Fcoef  = 2.0 / log2(s_CameraDefaultFarPlane + 1.0);
     return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
   }
 
@@ -587,7 +573,7 @@ const char *const g_CompassVertexShader = VERT_HEADER R"shader(
   }
 )shader";
 
-const char *const g_ImGuiVertexShader = VERT_HEADER R"shader(
+const char *const g_ImGuiVertexShader = R"shader(
 layout (std140) uniform u_EveryFrame
 {
   mat4 ProjMtx;
@@ -608,7 +594,7 @@ void main()
 }
 )shader";
 
-const char *const g_ImGuiFragmentShader = FRAG_HEADER R"shader(
+const char *const g_ImGuiFragmentShader = R"shader(
 uniform sampler2D Texture;
 
 in vec2 Frag_UV;
@@ -622,7 +608,7 @@ void main()
 }
 )shader";
 
-const char *const g_FenceVertexShader = VERT_HEADER R"shader(
+const char *const g_FenceVertexShader = R"shader(
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec2 a_uv;
 layout(location = 2) in vec4 a_ribbonInfo; // xyz: expand vector; z: pair id (0 or 1)
@@ -662,7 +648,7 @@ void main()
 }
 )shader";
 
-const char *const g_FenceFragmentShader = FRAG_HEADER R"shader(
+const char *const g_FenceFragmentShader = R"shader(
   //Input Format
   in vec2 v_uv;
   in vec4 v_colour;
@@ -679,7 +665,7 @@ const char *const g_FenceFragmentShader = FRAG_HEADER R"shader(
   }
 )shader";
 
-const char *const g_WaterFragmentShader = FRAG_HEADER R"shader(
+const char *const g_WaterFragmentShader = R"shader(
   //Input Format
   in vec2 v_uv0;
   in vec2 v_uv1;
@@ -742,7 +728,7 @@ const char *const g_WaterFragmentShader = FRAG_HEADER R"shader(
   }
 )shader";
 
-const char *const g_WaterVertexShader = VERT_HEADER R"shader(
+const char *const g_WaterVertexShader = R"shader(
   layout(location = 0) in vec2 a_position;
 
   out vec2 v_uv0;
@@ -778,7 +764,7 @@ const char *const g_WaterVertexShader = VERT_HEADER R"shader(
   }
 )shader";
 
-const char *const g_PolygonP3N3UV2FragmentShader = FRAG_HEADER R"shader(
+const char *const g_PolygonP3N3UV2FragmentShader = R"shader(
   //Input Format
   in vec2 v_uv;
   in vec4 v_colour;
@@ -802,13 +788,12 @@ const char *const g_PolygonP3N3UV2FragmentShader = FRAG_HEADER R"shader(
 
     out_Colour = vec4(diffuse, diffuseColour.a);
 
-    float farPlane = 6000000.0;
-    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    float Fcoef  = 2.0 / log2(s_CameraDefaultFarPlane + 1.0);
     gl_FragDepth = log2(v_flogz) * (0.5 * Fcoef);
   }
 )shader";
 
-const char *const g_PolygonP3N3UV2VertexShader = VERT_HEADER R"shader(
+const char *const g_PolygonP3N3UV2VertexShader = R"shader(
   //Input Format
   layout(location = 0) in vec3 a_pos;
   layout(location = 1) in vec3 a_normal;
@@ -830,8 +815,7 @@ const char *const g_PolygonP3N3UV2VertexShader = VERT_HEADER R"shader(
 
   float LogZ(vec4 pos)
   {
-    float farPlane = 6000000.0;
-    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    float Fcoef  = 2.0 / log2(s_CameraDefaultFarPlane + 1.0);
     return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
   }
 
@@ -851,7 +835,7 @@ const char *const g_PolygonP3N3UV2VertexShader = VERT_HEADER R"shader(
   }
 )shader";
 
-const char *const g_ImageRendererFragmentShader = FRAG_HEADER R"shader(
+const char *const g_ImageRendererFragmentShader = R"shader(
   //Input Format
   in vec2 v_uv;
   in vec4 v_colour;
@@ -868,7 +852,7 @@ const char *const g_ImageRendererFragmentShader = FRAG_HEADER R"shader(
   }
 )shader";
 
-const char *const g_ImageRendererMeshVertexShader = VERT_HEADER R"shader(
+const char *const g_ImageRendererMeshVertexShader = R"shader(
   //Input Format
   layout(location = 0) in vec3 a_pos;
   layout(location = 1) in vec3 a_normal; //unused
@@ -894,7 +878,7 @@ const char *const g_ImageRendererMeshVertexShader = VERT_HEADER R"shader(
   }
 )shader";
 
-const char *const g_ImageRendererBillboardVertexShader = VERT_HEADER R"shader(
+const char *const g_ImageRendererBillboardVertexShader = R"shader(
   //Input Format
   layout(location = 0) in vec3 a_pos;
   layout(location = 1) in vec2 a_uv;
@@ -920,7 +904,7 @@ const char *const g_ImageRendererBillboardVertexShader = VERT_HEADER R"shader(
   }
 )shader";
 
-const char *const g_FlatColour_FragmentShader = FRAG_HEADER R"shader(
+const char *const g_FlatColour_FragmentShader = R"shader(
   //Input Format
   in vec4 v_colour;
   in float v_flogz;
@@ -932,13 +916,12 @@ const char *const g_FlatColour_FragmentShader = FRAG_HEADER R"shader(
   {
     out_Colour = v_colour;
 
-    float farPlane = 6000000.0;
-    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    float Fcoef  = 2.0 / log2(s_CameraDefaultFarPlane + 1.0);
     gl_FragDepth = log2(v_flogz) * (0.5 * Fcoef);
   }
 )shader";
 
-const char *const g_DepthOnly_FragmentShader = FRAG_HEADER R"shader(
+const char *const g_DepthOnly_FragmentShader = R"shader(
   // Input format
   in float v_flogz;
 
@@ -949,13 +932,12 @@ const char *const g_DepthOnly_FragmentShader = FRAG_HEADER R"shader(
   {
     out_Colour = vec4(0.0);
 
-    float farPlane = 6000000.0;
-    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    float Fcoef  = 2.0 / log2(s_CameraDefaultFarPlane + 1.0);
     gl_FragDepth = log2(v_flogz) * (0.5 * Fcoef);
   }
 )shader";
 
-const char *const g_BlurVertexShader = VERT_HEADER R"shader(
+const char *const g_BlurVertexShader = R"shader(
   //Input format
   layout(location = 0) in vec3 a_position;
   layout(location = 1) in vec2 a_texCoord;
@@ -983,7 +965,7 @@ const char *const g_BlurVertexShader = VERT_HEADER R"shader(
   }
 )shader";
 
-const char *const g_BlurFragmentShader = FRAG_HEADER R"shader(
+const char *const g_BlurFragmentShader = R"shader(
   //Input Format
   in vec2 v_uv0;
   in vec2 v_uv1;
@@ -1011,7 +993,7 @@ const char *const g_BlurFragmentShader = FRAG_HEADER R"shader(
 
 )shader";
 
-const char *const g_HighlightVertexShader = VERT_HEADER R"shader(
+const char *const g_HighlightVertexShader = R"shader(
   //Input format
   layout(location = 0) in vec3 a_position;
   layout(location = 1) in vec2 a_texCoord;
@@ -1043,7 +1025,7 @@ const char *const g_HighlightVertexShader = VERT_HEADER R"shader(
   }
 )shader";
 
-const char *const g_HighlightFragmentShader = FRAG_HEADER R"shader(
+const char *const g_HighlightFragmentShader = R"shader(
   //Input Format
   in vec2 v_uv0;
   in vec2 v_uv1;
@@ -1089,7 +1071,7 @@ const char *const g_HighlightFragmentShader = FRAG_HEADER R"shader(
 )shader";
 
 
-const char *const g_udGPURenderQuadVertexShader = VERT_HEADER R"shader(
+const char *const g_udGPURenderQuadVertexShader = R"shader(
   layout(location = 0) in vec4 a_position;
   layout(location = 1) in vec4 a_color;
   layout(location = 2) in vec2 a_corner;
@@ -1138,7 +1120,7 @@ const char *const g_udGPURenderQuadVertexShader = VERT_HEADER R"shader(
   }
 )shader";
 
-const char *const g_udGPURenderQuadFragmentShader = FRAG_HEADER R"shader(
+const char *const g_udGPURenderQuadFragmentShader = R"shader(
   in vec4 v_colour;
 
   out vec4 out_Colour;
@@ -1150,7 +1132,7 @@ const char *const g_udGPURenderQuadFragmentShader = FRAG_HEADER R"shader(
 )shader";
 
 
-const char *const g_udGPURenderGeomVertexShader = VERT_HEADER R"shader(
+const char *const g_udGPURenderGeomVertexShader = R"shader(
   layout(location = 0) in vec4 a_position;
   layout(location = 1) in vec4 a_colour;
 
@@ -1199,7 +1181,7 @@ const char *const g_udGPURenderGeomVertexShader = VERT_HEADER R"shader(
   }
 )shader";
 
-const char *const g_udGPURenderGeomFragmentShader = FRAG_HEADER R"shader(
+const char *const g_udGPURenderGeomFragmentShader = R"shader(
   in vec4 g_colour;
 
   out vec4 out_Colour;
@@ -1210,7 +1192,7 @@ const char *const g_udGPURenderGeomFragmentShader = FRAG_HEADER R"shader(
   }
 )shader";
 
-const char *const g_udGPURenderGeomGeometryShader = FRAG_HEADER R"shader(
+const char *const g_udGPURenderGeomGeometryShader = R"shader(
   layout(points) in;
   layout(triangle_strip, max_vertices=4) out;
 
@@ -1240,7 +1222,7 @@ const char *const g_udGPURenderGeomGeometryShader = FRAG_HEADER R"shader(
   }
 )shader";
 
-const char *const g_FXAAVertexShader = FRAG_HEADER R"shader(
+const char *const g_FXAAVertexShader = R"shader(
 //Input format
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec2 a_texCoord;
@@ -1272,7 +1254,7 @@ void main()
 }
 )shader";
 
-const char *const g_FXAAFragmentShader = FRAG_HEADER R"shader(
+const char *const g_FXAAFragmentShader = R"shader(
 
 /*
 ============================================================================

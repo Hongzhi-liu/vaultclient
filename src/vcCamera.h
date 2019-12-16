@@ -4,6 +4,9 @@
 #include "udMath.h"
 #include "vcMath.h"
 
+constexpr float s_CameraDefaultNearPlane = 0.1f;
+constexpr float s_CameraDefaultFarPlane = 6000000.0f;
+
 enum vcCameraPivotMode
 {
   vcCPM_Tumble,

@@ -787,8 +787,8 @@ int main(int argc, char **args)
 
   programState.settings.camera.lockAltitude = false;
   programState.settings.camera.moveSpeed = 3.f;
-  programState.settings.camera.nearPlane = 0.5f;
-  programState.settings.camera.farPlane = 10000.f;
+  programState.settings.camera.nearPlane = s_CameraDefaultNearPlane;
+  programState.settings.camera.farPlane = s_CameraDefaultFarPlane;
   programState.settings.camera.fieldOfView = UD_PIf * 5.f / 18.f; // 50 degrees
 
   // Dock setting

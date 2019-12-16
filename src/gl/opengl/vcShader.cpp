@@ -2,6 +2,15 @@
 #include "vcOpenGL.h"
 #include "udPlatformUtil.h"
 #include "udStringUtil.h"
+#include "vcCamera.h"
+
+#if UDPLATFORM_IOS || UDPLATFORM_IOS_SIMULATOR || UDPLATFORM_EMSCRIPTEN
+# define FRAG_HEADER "#version 300 es\nprecision highp float;\n"
+# define VERT_HEADER "#version 300 es\n"
+#else
+# define FRAG_HEADER "#version 330 core\n#extension GL_ARB_explicit_attrib_location : enable\n"
+# define VERT_HEADER "#version 330 core\n#extension GL_ARB_explicit_attrib_location : enable\n"
+#endif
 
 GLint vcBuildShader(GLenum type, const GLchar *shaderCode)
 {
@@ -73,12 +82,24 @@ GLint vcBuildProgram(GLint vertexShader, GLint fragmentShader, GLint geometrySha
   return programObject;
 }
 
-bool vcShader_CreateFromText(vcShader **ppShader, const char *pVertexShader, const char *pFragmentShader, const vcVertexLayoutTypes * /*pInputTypes*/, uint32_t /*totalInputs*/, const char *pGeometryShader /*= nullptr*/)
+bool vcShader_CreateFromText(vcShader **ppShader, const char *pVertexSource, const char *pFragmentSource, const vcVertexLayoutTypes * /*pInputTypes*/, uint32_t /*totalInputs*/, const char *pShaderDefines /*= nullptr*/, const char *pGeometrySource /*= nullptr*/)
 {
-  if (ppShader == nullptr || pVertexShader == nullptr || pFragmentShader == nullptr)
+  if (ppShader == nullptr || pVertexSource == nullptr || pFragmentSource == nullptr)
     return false;
 
   vcShader *pShader = udAllocType(vcShader, 1, udAF_Zero);
+
+  //static const char *pDefaultShaderHeader = ;
+
+  const char *pVertexShader = nullptr;
+  const char *pFragmentShader = nullptr;
+  const char *pGeometryShader = nullptr;
+  const char *pCompleteDefines = nullptr;
+  udSprintf(&pCompleteDefines, "float s_CameraDefaultNearPlane=%f;\nfloat s_CameraDefaultFarPlane=%f;\n%s", s_CameraDefaultNearPlane, s_CameraDefaultFarPlane, pShaderDefines == nullptr ? "" : pShaderDefines);
+  udSprintf(&pVertexShader, "%s\n%s\n%s", VERT_HEADER, pCompleteDefines, pVertexSource);
+  udSprintf(&pFragmentShader, "%s\n%s\n%s", FRAG_HEADER, pCompleteDefines, pFragmentSource);
+  if (pGeometrySource != nullptr)
+    udSprintf(&pGeometryShader, "%s\n%s\n%s", FRAG_HEADER, pCompleteDefines, pFragmentSource);
 
   GLint geometryShaderId = (GLint)-1;
 #if UDPLATFORM_IOS || UDPLATFORM_IOS_SIMULATOR || UDPLATFORM_EMSCRIPTEN
@@ -94,6 +115,10 @@ bool vcShader_CreateFromText(vcShader **ppShader, const char *pVertexShader, con
     udFree(pShader);
 
   *ppShader = pShader;
+  udFree(pVertexShader);
+  udFree(pFragmentShader);
+  udFree(pGeometryShader);
+  udFree(pCompleteDefines);
 
   return (pShader != nullptr);
 }
