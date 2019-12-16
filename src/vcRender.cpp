@@ -870,9 +870,9 @@ void vcRender_RenderAndApplyViewSheds(vcState *pProgramState, vcRenderContext *p
             continue;
 
           if (pInstance->renderType == vcRenderPolyInstance::RenderType_Polygon)
-            vcPolygonModel_Render(pProgramState->settings.camera.farPlane, pInstance->pModel, pInstance->worldMat, viewProjection, vcPMP_Shadows);
+            vcPolygonModel_Render(pInstance->pModel, pInstance->worldMat, viewProjection, vcPMP_Shadows);
           else if (pInstance->renderType == vcRenderPolyInstance::RenderType_SceneLayer)
-            vcSceneLayerRenderer_Render(pInstance->pSceneLayer, pInstance->worldMat, viewProjection, shadowRenderCameras[r].position, ViewShedMapRes, pProgramState->settings.camera.farPlane, nullptr, true);
+            vcSceneLayerRenderer_Render(pInstance->pSceneLayer, pInstance->worldMat, viewProjection, shadowRenderCameras[r].position, ViewShedMapRes, nullptr, true);
         }
       }
     }
@@ -925,9 +925,9 @@ void vcRender_OpaquePass(vcState *pProgramState, vcRenderContext *pRenderContext
       vcGLState_SetFaceMode(vcGLSFM_Solid, pInstance->cullFace);
 
       if (pInstance->renderType == vcRenderPolyInstance::RenderType_Polygon)
-        vcPolygonModel_Render(pProgramState->settings.camera.farPlane, pInstance->pModel, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, vcPMP_Standard, pInstance->pDiffuseOverride, pTintOverride);
+        vcPolygonModel_Render(pInstance->pModel, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, vcPMP_Standard, pInstance->pDiffuseOverride, pTintOverride);
       else if (pInstance->renderType == vcRenderPolyInstance::RenderType_SceneLayer)
-        vcSceneLayerRenderer_Render(pInstance->pSceneLayer, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, pProgramState->camera.position, pRenderContext->sceneResolution, pProgramState->settings.camera.farPlane);
+        vcSceneLayerRenderer_Render(pInstance->pSceneLayer, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, pProgramState->camera.position, pRenderContext->sceneResolution);
     }
 
     vcGLState_SetFaceMode(vcGLSFM_Solid, vcGLSCM_Back);
@@ -983,9 +983,9 @@ void vcRender_TransparentPass(vcState *pProgramState, vcRenderContext *pRenderCo
     vcGLState_SetFaceMode(vcGLSFM_Solid, pInstance->cullFace);
 
     if (pInstance->renderType == vcRenderPolyInstance::RenderType_Polygon)
-      vcPolygonModel_Render(pProgramState->settings.camera.farPlane, pInstance->pModel, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, vcPMP_Standard, pInstance->pDiffuseOverride, &transparentColour);
+      vcPolygonModel_Render(pInstance->pModel, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, vcPMP_Standard, pInstance->pDiffuseOverride, &transparentColour);
     else if (pInstance->renderType == vcRenderPolyInstance::RenderType_SceneLayer)
-      vcSceneLayerRenderer_Render(pInstance->pSceneLayer, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, pProgramState->camera.position, pRenderContext->sceneResolution, pProgramState->settings.camera.farPlane);
+      vcSceneLayerRenderer_Render(pInstance->pSceneLayer, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, pProgramState->camera.position, pRenderContext->sceneResolution);
   }
 
   vcGLState_SetFaceMode(vcGLSFM_Solid, vcGLSCM_Back);
@@ -1063,9 +1063,9 @@ bool vcRender_DrawSelectedGeometry(vcState *pProgramState, vcRenderContext *pRen
       vcGLState_SetFaceMode(vcGLSFM_Solid, pInstance->cullFace);
 
       if (pInstance->renderType == vcRenderPolyInstance::RenderType_Polygon)
-        vcPolygonModel_Render(pProgramState->settings.camera.farPlane, pInstance->pModel, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, vcPMP_ColourOnly, nullptr, &selectionMask);
+        vcPolygonModel_Render(pInstance->pModel, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, vcPMP_ColourOnly, nullptr, &selectionMask);
       else if (pInstance->renderType == vcRenderPolyInstance::RenderType_SceneLayer)
-        vcSceneLayerRenderer_Render(pInstance->pSceneLayer, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, pProgramState->camera.position, pRenderContext->sceneResolution, pProgramState->settings.camera.farPlane, &selectionMask);
+        vcSceneLayerRenderer_Render(pInstance->pSceneLayer, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, pProgramState->camera.position, pRenderContext->sceneResolution, &selectionMask);
 
       active = true;
     }
@@ -1489,9 +1489,9 @@ vcRenderPickResult vcRender_PolygonPick(vcState *pProgramState, vcRenderContext 
         vcGLState_SetFaceMode(vcGLSFM_Solid, pInstance->cullFace);
 
         if (pInstance->renderType == vcRenderPolyInstance::RenderType_Polygon)
-          vcPolygonModel_Render(pProgramState->settings.camera.farPlane, pInstance->pModel, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, vcPMP_ColourOnly, nullptr, &idAsColour);
+          vcPolygonModel_Render(pInstance->pModel, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, vcPMP_ColourOnly, nullptr, &idAsColour);
         else if (pInstance->renderType == vcRenderPolyInstance::RenderType_SceneLayer)
-          vcSceneLayerRenderer_Render(pInstance->pSceneLayer, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, pProgramState->camera.position, pRenderContext->sceneResolution, pProgramState->settings.camera.farPlane, &idAsColour);
+          vcSceneLayerRenderer_Render(pInstance->pSceneLayer, pInstance->worldMat, pProgramState->camera.matrices.viewProjection, pProgramState->camera.position, pRenderContext->sceneResolution, &idAsColour);
 
       }
 
@@ -1541,8 +1541,14 @@ vcRenderPickResult vcRender_PolygonPick(vcState *pProgramState, vcRenderContext 
 
   if (result.success)
   {
+    // reconstruct from log z
+    float a = pProgramState->settings.camera.farPlane / (pProgramState->settings.camera.farPlane - pProgramState->settings.camera.nearPlane);
+    float b = pProgramState->settings.camera.farPlane * pProgramState->settings.camera.nearPlane / (pProgramState->settings.camera.nearPlane - pProgramState->settings.camera.farPlane);
+    double depth = udPow(2.0, pickDepth * udLog2(pProgramState->settings.camera.farPlane + 1.0)) - 1.0;
+    double lDepth = a + b / depth;
+
     // note: upside down (1.0 - uv.y)
-    udDouble4 clipPos = udDouble4::create(pRenderContext->currentMouseUV.x * 2.0 - 1.0, (1.0 - pRenderContext->currentMouseUV.y) * 2.0 - 1.0, pickDepth, 1.0);
+    udDouble4 clipPos = udDouble4::create(pRenderContext->currentMouseUV.x * 2.0 - 1.0, (1.0 - pRenderContext->currentMouseUV.y) * 2.0 - 1.0, lDepth, 1.0);
 #if GRAPHICS_API_OPENGL
     clipPos.z = clipPos.z * 2.0 - 1.0;
 #endif

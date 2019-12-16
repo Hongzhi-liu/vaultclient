@@ -44,7 +44,6 @@ static struct vcPolygonModelShader
     udFloat4x4 u_worldViewProjectionMatrix;
     udFloat4x4 u_world;
     udFloat4 u_colour;
-    udFloat4 u_farPlane;
   } everyObject;
 
 } gShaders[vcPMST_Count];
@@ -458,7 +457,7 @@ epilogue:
   return result;
 }
 
-udResult vcPolygonModel_Render(float farPlane, vcPolygonModel *pModel, const udDouble4x4 &modelMatrix, const udDouble4x4 &viewProjectionMatrix, const vcPolyModelPass &passType /*= vcPMP_Standard*/, vcTexture *pDiffuseOverride /*= nullptr*/, const udFloat4 *pColourOverride /*= nullptr*/)
+udResult vcPolygonModel_Render(vcPolygonModel *pModel, const udDouble4x4 &modelMatrix, const udDouble4x4 &viewProjectionMatrix, const vcPolyModelPass &passType /*= vcPMP_Standard*/, vcTexture *pDiffuseOverride /*= nullptr*/, const udFloat4 *pColourOverride /*= nullptr*/)
 {
   if (pModel == nullptr)
     return udR_InvalidParameter_;
@@ -498,7 +497,6 @@ udResult vcPolygonModel_Render(float farPlane, vcPolygonModel *pModel, const udD
     if (pColourOverride)
       colour = *pColourOverride;
 
-    pPolygonShader->everyObject.u_farPlane.x = farPlane;
     pPolygonShader->everyObject.u_colour = colour;
     pPolygonShader->everyObject.u_world = udFloat4x4::create(modelMatrix);
     pPolygonShader->everyObject.u_worldViewProjectionMatrix = udFloat4x4::create(viewProjectionMatrix * modelMatrix * pModel->modelOffset);

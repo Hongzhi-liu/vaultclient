@@ -370,7 +370,7 @@ const char *const g_tileFragmentShader = FRAG_HEADER R"shader(
 //Input Format
 in vec4 v_colour;
 in vec2 v_uv;
-in vec2 flogz; // logz, far plane
+in float v_flogz; // logz
 
 //Output Format
 out vec4 out_Colour;
@@ -382,9 +382,9 @@ void main()
   vec4 col = texture(u_texture, v_uv);
   out_Colour = vec4(col.xyz * v_colour.xyz, v_colour.w);
 
-  float farplane = flogz.y;
-  float Fcoef = 2.0 / log2(farplane + 1.0);
-  gl_FragDepth = log2(flogz.x) * (0.5 * Fcoef);
+  float farPlane = 6000000.0;
+  float Fcoef = 2.0 / log2(farPlane + 1.0);
+  gl_FragDepth = log2(v_flogz) * (0.5 * Fcoef);
 }
 )shader";
 
@@ -395,7 +395,7 @@ layout(location = 0) in vec3 a_uv;
 //Output Format
 out vec4 v_colour;
 out vec2 v_uv;
-out vec2 flogz;
+out float v_flogz;
 
 // This should match CPU struct size
 #define VERTEX_COUNT 2
@@ -405,11 +405,11 @@ layout (std140) uniform u_EveryObject
   mat4 u_projection;
   vec4 u_eyePositions[VERTEX_COUNT * VERTEX_COUNT];
   vec4 u_colour;
-  vec4 u_farPlane;
 };
 
-float LogZ(vec4 pos, float farPlane)
+float LogZ(vec4 pos)
 {
+  float farPlane = 6000000.0;
   float Fcoef  = 2.0 / log2(farPlane + 1.0);
   return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
 }
@@ -423,9 +423,8 @@ void main()
   v_colour = u_colour;
   gl_Position = finalClipPos;
 
-  flogz.x = 1.0 + gl_Position.w;
-  flogz.y = u_farPlane.x;
-  gl_Position.z = LogZ(gl_Position, u_farPlane.x);
+  v_flogz = 1.0 + gl_Position.w;
+  gl_Position.z = LogZ(gl_Position);
 }
 )shader";
 
@@ -525,6 +524,7 @@ const char *const g_CompassFragmentShader = FRAG_HEADER R"shader(
   in vec3 v_normal;
   in vec4 v_fragClipPosition;
   in vec3 v_sunDirection;
+  in float v_flogz;
 
   //Output Format
   out vec4 out_Colour;
@@ -539,6 +539,10 @@ const char *const g_CompassFragmentShader = FRAG_HEADER R"shader(
     edotr = pow(edotr, 60.0);
     vec3 sheenColour = vec3(1.0, 1.0, 0.9);
     out_Colour = vec4(v_colour.a * (ndotl * v_colour.xyz + edotr * sheenColour), 1.0);
+
+    float farPlane = 6000000.0;
+    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    gl_FragDepth = log2(v_flogz) * (0.5 * Fcoef);
   }
 )shader";
 
@@ -552,6 +556,7 @@ const char *const g_CompassVertexShader = VERT_HEADER R"shader(
   out vec3 v_normal;
   out vec4 v_fragClipPosition;
   out vec3 v_sunDirection;
+  out float v_flogz;
 
   layout (std140) uniform u_EveryObject
   {
@@ -561,6 +566,13 @@ const char *const g_CompassVertexShader = VERT_HEADER R"shader(
     float _padding;
   };
 
+  float LogZ(vec4 pos)
+  {
+    float farPlane = 6000000.0;
+    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
+  }
+
   void main()
   {
     gl_Position = u_worldViewProjectionMatrix * vec4(a_pos, 1.0);
@@ -569,6 +581,9 @@ const char *const g_CompassVertexShader = VERT_HEADER R"shader(
     v_colour = u_colour;
     v_sunDirection = u_sunDirection;
     v_fragClipPosition = gl_Position;
+
+    gl_Position.z = LogZ(gl_Position);
+    v_flogz = 1.0 + gl_Position.w;
   }
 )shader";
 
@@ -768,7 +783,7 @@ const char *const g_PolygonP3N3UV2FragmentShader = FRAG_HEADER R"shader(
   in vec2 v_uv;
   in vec4 v_colour;
   in vec3 v_normal;
-  in vec2 flogz;
+  in float v_flogz;
 
   //Output Format
   out vec4 out_Colour;
@@ -787,9 +802,9 @@ const char *const g_PolygonP3N3UV2FragmentShader = FRAG_HEADER R"shader(
 
     out_Colour = vec4(diffuse, diffuseColour.a);
 
-    float farPlane = flogz.y;
+    float farPlane = 6000000.0;
     float Fcoef  = 2.0 / log2(farPlane + 1.0);
-    gl_FragDepth = log2(flogz.x) * (0.5 * Fcoef);
+    gl_FragDepth = log2(v_flogz) * (0.5 * Fcoef);
   }
 )shader";
 
@@ -804,18 +819,18 @@ const char *const g_PolygonP3N3UV2VertexShader = VERT_HEADER R"shader(
   out vec2 v_uv;
   out vec4 v_colour;
   out vec3 v_normal;
-  out vec2 flogz;
+  out float v_flogz;
 
   layout (std140) uniform u_EveryObject
   {
     mat4 u_worldViewProjectionMatrix;
     mat4 u_worldMatrix;
     vec4 u_colour;
-    vec4 u_farPlane;
   };
 
-  float LogZ(vec4 pos, float farPlane)
+  float LogZ(vec4 pos)
   {
+    float farPlane = 6000000.0;
     float Fcoef  = 2.0 / log2(farPlane + 1.0);
     return log2(max(1e-6, 1.0 + pos.w)) * Fcoef - 1.0;
   }
@@ -826,9 +841,9 @@ const char *const g_PolygonP3N3UV2VertexShader = VERT_HEADER R"shader(
     vec3 worldNormal = normalize((u_worldMatrix * vec4(a_normal, 0.0)).xyz);
 
     gl_Position = u_worldViewProjectionMatrix * vec4(a_pos, 1.0);
-    gl_Position.z = LogZ(gl_Position, u_farPlane.x);
-    flogz.x = 1.0 + gl_Position.w;
-    flogz.y = u_farPlane.x;
+
+    gl_Position.z = LogZ(gl_Position);
+    v_flogz = 1.0 + gl_Position.w;
 
     v_uv = a_uv;
     v_normal = worldNormal;
@@ -908,6 +923,7 @@ const char *const g_ImageRendererBillboardVertexShader = VERT_HEADER R"shader(
 const char *const g_FlatColour_FragmentShader = FRAG_HEADER R"shader(
   //Input Format
   in vec4 v_colour;
+  in float v_flogz;
 
   //Output Format
   out vec4 out_Colour;
@@ -915,16 +931,27 @@ const char *const g_FlatColour_FragmentShader = FRAG_HEADER R"shader(
   void main()
   {
     out_Colour = v_colour;
+
+    float farPlane = 6000000.0;
+    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    gl_FragDepth = log2(v_flogz) * (0.5 * Fcoef);
   }
 )shader";
 
 const char *const g_DepthOnly_FragmentShader = FRAG_HEADER R"shader(
+  // Input format
+  in float v_flogz;
+
   //Output Format
   out vec4 out_Colour;
 
   void main()
   {
     out_Colour = vec4(0.0);
+
+    float farPlane = 6000000.0;
+    float Fcoef  = 2.0 / log2(farPlane + 1.0);
+    gl_FragDepth = log2(v_flogz) * (0.5 * Fcoef);
   }
 )shader";
 
