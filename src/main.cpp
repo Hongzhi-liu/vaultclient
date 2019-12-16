@@ -46,6 +46,7 @@
 #include "vcInternalTexturesData.h"
 #include "vcHotkey.h"
 
+#include "gl/vcShaderConductor.h"
 #include "gl/vcGLState.h"
 #include "gl/vcFramebuffer.h"
 
@@ -815,6 +816,9 @@ int main(int argc, char **args)
 
   vcProject_InitBlankScene(&programState);
 
+  if (!vcShaderConductor_BuildAll())
+    goto epilogue;
+
   for (int i = 1; i < argc; ++i)
   {
 #if UDPLATFORM_OSX
@@ -1336,11 +1340,6 @@ void vcRenderSceneWindow(vcState *pProgramState)
 
     ImVec2 uv0 = ImVec2(0, 0);
     ImVec2 uv1 = ImVec2(renderData.sceneScaling.x, renderData.sceneScaling.y);
-#if GRAPHICS_API_OPENGL
-    // flip vertically
-    uv1.y = 0;
-    uv0.y = renderData.sceneScaling.y;
-#endif
 
     // Actual rendering to this texture is deferred
     ImGui::ImageButton(renderData.pSceneTexture, windowSize, uv0, uv1, 0);

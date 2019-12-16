@@ -110,11 +110,11 @@ void vcCamera_UpdateMatrices(vcCamera *pCamera, const vcCameraSettings &settings
 
   pCamera->matrices.camera = vcCamera_GetMatrix(pCamera);
 
-#if GRAPHICS_API_OPENGL
+/*#if GRAPHICS_API_OPENGL
   pCamera->matrices.projectionNear = udDouble4x4::perspectiveNO(fov, aspect, 0.5f, 10000.f);
-#else
+#else*/
   pCamera->matrices.projectionNear = udDouble4x4::perspectiveZO(fov, aspect, 0.5f, 10000.f);
-#endif
+//#endif
 
   double orthoSize = udMax(1.0, pCamera->position.z * udTan(settings.fieldOfView / 2.0)); // don't allow a 0 ortho size
 
@@ -129,13 +129,13 @@ void vcCamera_UpdateMatrices(vcCamera *pCamera, const vcCameraSettings &settings
   udDouble4x4 projectionOrthoUD = udDouble4x4::orthoZO(-orthoSize * aspect, orthoSize * aspect, -orthoSize, orthoSize, zNear, zFar);
   pCamera->matrices.projectionUD = udLerp(projectionPerspUD, projectionOrthoUD, mapModeAmt);
 
-#if GRAPHICS_API_OPENGL
+/*#if GRAPHICS_API_OPENGL
   udDouble4x4 projectionPersp = udDouble4x4::perspectiveNO(fov, aspect, zNear, zFar);
   udDouble4x4 projectionOrtho = udDouble4x4::orthoNO(-orthoSize * aspect, orthoSize * aspect, -orthoSize, orthoSize, zNear, zFar);
   pCamera->matrices.projection = udLerp(projectionPersp, projectionOrtho, mapModeAmt);
-#else
+#else*/
   pCamera->matrices.projection = pCamera->matrices.projectionUD;
-#endif
+//#endif
 
   pCamera->matrices.view = pCamera->matrices.camera;
   pCamera->matrices.view.inverse();
@@ -149,9 +149,9 @@ void vcCamera_UpdateMatrices(vcCamera *pCamera, const vcCameraSettings &settings
     udDouble2 mousePosClip = udDouble2::create((pMousePos->x / windowSize.x) * 2.0 - 1.0, 1.0 - (pMousePos->y / windowSize.y) * 2.0);
 
     double nearClipZ = 0.0;
-#if GRAPHICS_API_OPENGL
+/*#if GRAPHICS_API_OPENGL
     nearClipZ = -1.0;
-#endif
+#endif*/
     udDouble4 mouseNear = (pCamera->matrices.inverseViewProjection * udDouble4::create(mousePosClip, nearClipZ, 1.0));
     udDouble4 mouseFar = (pCamera->matrices.inverseViewProjection * udDouble4::create(mousePosClip, 1.0, 1.0));
 

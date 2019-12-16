@@ -62,23 +62,24 @@ void ImGuiGL_RenderDrawData(ImDrawData* draw_data)
   vcGLState_SetViewport(0, 0, fb_width, fb_height);
 
 #if GRAPHICS_API_METAL
-  const udFloat4x4 ortho_projection = udFloat4x4::create(
+  udFloat4x4 ortho_projection = udFloat4x4::create(
     2.0f / io.DisplaySize.x, 0.0f, 0.0f, 0.0f,
     0.0f, 2.0f / -io.DisplaySize.y, 0.0f, 0.0f,
     0.0f, 0.0f, 1.0f, 0.0f,
     -1.0f, 1.0f, 0.0f, 1.0f
   );
 #else
-  const udFloat4x4 ortho_projection = udFloat4x4::create(
+  udFloat4x4 ortho_projection = udFloat4x4::create(
     2.0f / io.DisplaySize.x, 0.0f, 0.0f, 0.0f,
     0.0f, 2.0f / -io.DisplaySize.y, 0.0f, 0.0f,
     0.0f, 0.0f, -1.0f, 0.0f,
     -1.0f, 1.0f, 0.0f, 1.0f
   );
 #endif
+
   vcShader_Bind(pImGuiShader);
   vcShader_BindConstantBuffer(pImGuiShader, g_pAttribLocationProjMtx, &ortho_projection, sizeof(ortho_projection));
-  vcShader_GetSamplerIndex(&pImGuiSampler, pImGuiShader, "Texture");
+  vcShader_GetSamplerIndex(&pImGuiSampler, pImGuiShader, g_ColourSampler);
 
   if (draw_data->CmdListsCount != 0 && pImGuiMesh == nullptr)
     vcMesh_Create(&pImGuiMesh, vcImGuiVertexLayout, 3, draw_data->CmdLists[0]->VtxBuffer.Data, draw_data->CmdLists[0]->VtxBuffer.Size, draw_data->CmdLists[0]->IdxBuffer.Data, draw_data->CmdLists[0]->IdxBuffer.Size, vcMF_Dynamic);
@@ -142,10 +143,10 @@ bool ImGuiGL_CreateDeviceObjects()
   // This function is pretty messy now to support loading fonts on the fly but also to remain _close_ to how the ImGui sample works to make it easy to merge future changes
 
   if (pImGuiShader == nullptr)
-    vcShader_CreateFromText(&pImGuiShader, g_ImGuiVertexShader, g_ImGuiFragmentShader, vcImGuiVertexLayout);
+    vcShader_CreateFromText(&pImGuiShader, g_VertexShaders[vcSI_ImGui], g_FragmentShaders[vcSI_ImGui], vcImGuiVertexLayout);
 
   if (g_pAttribLocationProjMtx == nullptr)
-    vcShader_GetConstantBuffer(&g_pAttribLocationProjMtx, pImGuiShader, "u_EveryFrame", sizeof(udFloat4x4));
+    vcShader_GetConstantBuffer(&g_pAttribLocationProjMtx, pImGuiShader, g_EveryFrameVert, sizeof(udFloat4x4));
 
   ImGuiGL_CreateFontsTexture();
 

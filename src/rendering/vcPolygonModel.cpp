@@ -545,17 +545,17 @@ udResult vcPolygonModel_CreateShaders()
   UD_ERROR_IF(gPolygonShaderRefCount != 1, udR_Success);
 
   pPolygonShader = &gShaders[vcPMST_P3N3UV2_Opaque];
-  UD_ERROR_IF(!vcShader_CreateFromText(&pPolygonShader->pShader, g_PolygonP3N3UV2VertexShader, g_PolygonP3N3UV2FragmentShader, vcP3N3UV2VertexLayout), udR_InternalError);
-  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pPolygonShader->pEveryObjectConstantBuffer, pPolygonShader->pShader, "u_EveryObject", sizeof(vcPolygonModelShader::everyObject)), udR_InternalError);
-  UD_ERROR_IF(!vcShader_GetSamplerIndex(&pPolygonShader->pDiffuseSampler, pPolygonShader->pShader, "u_texture"), udR_InternalError);
+  UD_ERROR_IF(!vcShader_CreateFromText(&pPolygonShader->pShader, g_VertexShaders[vcSI_PolygonP3N3UV2], g_FragmentShaders[vcSI_PolygonP3N3UV2], vcP3N3UV2VertexLayout), udR_InternalError);
+  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pPolygonShader->pEveryObjectConstantBuffer, pPolygonShader->pShader, g_EveryObject, sizeof(vcPolygonModelShader::everyObject)), udR_InternalError);
+  UD_ERROR_IF(!vcShader_GetSamplerIndex(&pPolygonShader->pDiffuseSampler, pPolygonShader->pShader, g_ColourSampler), udR_InternalError);
 
   pPolygonShader = &gShaders[vcPMST_P3N3UV2_FlatColour];
-  UD_ERROR_IF(!vcShader_CreateFromText(&pPolygonShader->pShader, g_PolygonP3N3UV2VertexShader, g_FlatColour_FragmentShader, vcP3N3UV2VertexLayout), udR_InternalError);
-  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pPolygonShader->pEveryObjectConstantBuffer, pPolygonShader->pShader, "u_EveryObject", sizeof(vcPolygonModelShader::everyObject)), udR_InternalError);
+  UD_ERROR_IF(!vcShader_CreateFromText(&pPolygonShader->pShader, g_VertexShaders[vcSI_PolygonP3N3UV2], g_FragmentShaders[vcSI_FlatColour], vcP3N3UV2VertexLayout), udR_InternalError);
+  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pPolygonShader->pEveryObjectConstantBuffer, pPolygonShader->pShader, g_EveryObject, sizeof(vcPolygonModelShader::everyObject)), udR_InternalError);
 
   pPolygonShader = &gShaders[vcPMST_P3N3UV2_DepthOnly];
-  UD_ERROR_IF(!vcShader_CreateFromText(&pPolygonShader->pShader, g_PolygonP3N3UV2VertexShader, g_DepthOnly_FragmentShader, vcP3N3UV2VertexLayout), udR_InternalError);
-  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pPolygonShader->pEveryObjectConstantBuffer, pPolygonShader->pShader, "u_EveryObject", sizeof(vcPolygonModelShader::everyObject)), udR_InternalError);
+  UD_ERROR_IF(!vcShader_CreateFromText(&pPolygonShader->pShader, g_VertexShaders[vcSI_PolygonP3N3UV2], g_FragmentShaders[vcSI_DepthOnly], vcP3N3UV2VertexLayout), udR_InternalError);
+  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pPolygonShader->pEveryObjectConstantBuffer, pPolygonShader->pShader, g_EveryObject, sizeof(vcPolygonModelShader::everyObject)), udR_InternalError);
 
   UD_ERROR_CHECK(vcTexture_Create(&pWhiteTexture, 1, 1, &WhitePixel));
 

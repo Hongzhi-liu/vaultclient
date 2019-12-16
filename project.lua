@@ -11,6 +11,7 @@ project "vaultClient"
 	files { "3rdParty/Imgui/**.cpp", "3rdParty/Imgui/**.h" }
 	files { "3rdParty/stb/**.h" }
 	files { "3rdParty/easyexif/**.h", "3rdParty/easyexif/**.cpp" }
+	files { "3rdParty/ShaderConductor/**.hpp" }
 	files { "project.lua" }
 	files { "docs/**.md" }
 	files { "builds/releasenotes.md" }
@@ -23,6 +24,7 @@ project "vaultClient"
 	includedirs { "3rdParty/Imgui" }
 	includedirs { "3rdParty/stb" }
 	includedirs { "3rdParty/easyexif" }
+	includedirs { "3rdParty/ShaderConductor" }
 
 	links { "udCore" .. (projectSuffix or "") }
 
@@ -95,7 +97,8 @@ project "vaultClient"
 		files { "src/**.rc" }
 		linkoptions( "/LARGEADDRESSAWARE" )
 		libdirs { "3rdParty/SDL2-2.0.8/lib/x64" }
-		links { "SDL2.lib", "SDL2main.lib", "winmm.lib", "ws2_32", "winhttp", "imm32.lib" }
+		libdirs { "3rdParty/ShaderConductor" }
+		links { "SDL2.lib", "SDL2main.lib", "winmm.lib", "ws2_32", "winhttp", "imm32.lib", "ShaderConductor.lib", "SPIRV-Tools.lib", "SPIRV-Tools-opt.lib", "spirv-cross-core.lib", "spirv-cross-glsl.lib" }
 
 	filter { "system:linux" }
 		linkoptions { "-Wl,-rpath '-Wl,$$ORIGIN'" } -- Check beside the executable for the SDK

@@ -3,55 +3,38 @@
 
 #include "vcGLState.h"
 
-extern const char* const g_VisualizationVertexShader;
-extern const char *const g_VisualizationFragmentShader;
-extern const char *const g_PostEffectsVertexShader;
-extern const char *const g_PostEffectsFragmentShader;
-extern const char *const g_ViewShedFragmentShader;
-extern const char *const g_ViewShedVertexShader;
+enum ShaderIndexes
+{
+  vcSI_Visualization = 0,
+  vcSI_PostEffects = 1,
+  vcSI_ViewShed = 2,
+  vcSI_UD = 3,
+  vcSI_Splat = 4,
+  vcSI_Tile = 5,
+  vcSI_SkyboxPanorama = 6,
+  vcSI_SkyboxImageColour = 7,
+  vcSI_Fence = 8,
+  vcSI_Water = 9,
+  vcSI_Compass = 10,
+  vcSI_ImGui = 11,
+  vcSI_PolygonP3N3UV2 = 12,
+  vcSI_FlatColour = 13,
+  vcSI_DepthOnly = 14,
+  vcSI_ImageRenderer = 15,
+  vcSI_ImageRendererBillboard = 16,
+  vcSI_Blur = 17,
+  vcSI_Highlight = 18,
+  vcSI_Count = 19
+};
 
-extern const char* const g_udFragmentShader;
-extern const char* const g_udSplatIdFragmentShader;
-extern const char* const g_udVertexShader;
-extern const char* const g_tileFragmentShader;
-extern const char* const g_tileVertexShader;
-extern const char* const g_vcSkyboxFragmentShaderPanorama;
-extern const char* const g_vcSkyboxFragmentShaderImageColour;
-extern const char* const g_vcSkyboxVertexShaderPanorama;
-extern const char *const g_vcSkyboxVertexShaderImageColour;
-extern const char* const g_FenceVertexShader;
-extern const char* const g_FenceFragmentShader;
-extern const char* const g_WaterVertexShader;
-extern const char* const g_WaterFragmentShader;
-
-extern const char *const g_CompassFragmentShader;
-extern const char *const g_CompassVertexShader;
-
-extern const char *const g_ImGuiVertexShader;
-extern const char *const g_ImGuiFragmentShader;
-
-// Polygon shaders
-extern const char *const g_PolygonP3N3UV2FragmentShader;
-extern const char *const g_PolygonP3N3UV2VertexShader;
-extern const char *const g_FlatColour_FragmentShader;
-extern const char *const g_DepthOnly_FragmentShader;
-
-// Image Renderer shaders
-extern const char *const g_ImageRendererFragmentShader;
-extern const char *const g_ImageRendererMeshVertexShader;
-extern const char *const g_ImageRendererBillboardVertexShader;
-
-// Utility Shaders
-extern const char *const g_BlurVertexShader;
-extern const char *const g_BlurFragmentShader;
-extern const char *const g_HighlightVertexShader;
-extern const char *const g_HighlightFragmentShader;
+extern const char *g_VertexShaders[];
+extern const char *g_FragmentShaders[];
 
 // GPU UD Renderer
-extern const char *const g_udGPURenderQuadVertexShader;
-extern const char *const g_udGPURenderQuadFragmentShader;
-extern const char *const g_udGPURenderGeomVertexShader;
-extern const char *const g_udGPURenderGeomFragmentShader;
-extern const char *const g_udGPURenderGeomGeometryShader;
+extern const char *g_udGPURenderQuadVertexShader;
+extern const char *g_udGPURenderQuadFragmentShader;
+extern const char *g_udGPURenderGeomVertexShader;
+extern const char *g_udGPURenderGeomFragmentShader;
+extern const char *g_udGPURenderGeomGeometryShader;
 
 #endif//vcRenderShaders_h__

@@ -124,11 +124,11 @@ udResult vcFenceRenderer_Create(vcFenceRenderer **ppFenceRenderer)
   pFenceRenderer->config.imageMode = vcRRIM_Solid;
   pFenceRenderer->config.visualMode = vcRRVM_Fence;
 
-  UD_ERROR_IF(!vcShader_CreateFromText(&pFenceRenderer->renderShader.pProgram, g_FenceVertexShader, g_FenceFragmentShader, vcP3UV2RI4VertexLayout), udR_InternalError);
+  UD_ERROR_IF(!vcShader_CreateFromText(&pFenceRenderer->renderShader.pProgram, g_VertexShaders[vcSI_Fence], g_FragmentShaders[vcSI_Fence], vcP3UV2RI4VertexLayout), udR_InternalError);
   UD_ERROR_IF(!vcShader_Bind(pFenceRenderer->renderShader.pProgram), udR_InternalError);
-  UD_ERROR_IF(!vcShader_GetSamplerIndex(&pFenceRenderer->renderShader.uniform_texture, pFenceRenderer->renderShader.pProgram, "u_texture"), udR_InternalError);
-  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pFenceRenderer->renderShader.uniform_everyFrame, pFenceRenderer->renderShader.pProgram, "u_EveryFrame", sizeof(pFenceRenderer->renderShader.everyFrameParams)), udR_InternalError);
-  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pFenceRenderer->renderShader.uniform_everyObject, pFenceRenderer->renderShader.pProgram, "u_EveryObject", sizeof(pFenceRenderer->renderShader.everyObjectParams)), udR_InternalError);
+  UD_ERROR_IF(!vcShader_GetSamplerIndex(&pFenceRenderer->renderShader.uniform_texture, pFenceRenderer->renderShader.pProgram, g_ColourSampler), udR_InternalError);
+  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pFenceRenderer->renderShader.uniform_everyFrame, pFenceRenderer->renderShader.pProgram, g_EveryFrameVert, sizeof(pFenceRenderer->renderShader.everyFrameParams)), udR_InternalError);
+  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pFenceRenderer->renderShader.uniform_everyObject, pFenceRenderer->renderShader.pProgram, g_EveryObject, sizeof(pFenceRenderer->renderShader.everyObjectParams)), udR_InternalError);
 
   UD_ERROR_CHECK(vcFenceRenderer_Init());
 

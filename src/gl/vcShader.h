@@ -23,4 +23,26 @@ bool vcShader_ReleaseConstantBuffer(vcShader *pShader, vcShaderConstantBuffer *p
 
 bool vcShader_GetSamplerIndex(vcShaderSampler **ppSampler, vcShader *pShader, const char *pSamplerName);
 
+// ShaderConductor prepends type_ to buffer names regardless of what name you choose
+#if GRAPHICS_API_OPENGL
+static const char *g_EveryObject = "type_u_EveryObject";
+static const char *g_EveryFrameVert = "type_u_EveryFrameVert";
+static const char *g_EveryFrameFrag = "type_u_EveryFrameFrag";
+static const char *g_VertParams = "type_u_VertParams";
+static const char *g_FragParams = "type_u_FragParams";
+
+static const char *g_ColourSampler = "SPIRV_Cross_CombinedcolourTexturecolourSampler";
+static const char *g_DepthSampler = "SPIRV_Cross_CombineddepthTexturedepthSampler";
+
+#else
+static const char *g_EveryObject = "u_EveryObject";
+static const char *g_EveryFrameVert = "u_EveryFrameVert";
+static const char *g_EveryFrameFrag = "u_EveryFrameFrag";
+static const char *g_VertParams = "u_VertParams";
+static const char *g_FragParams = "u_FragParams";
+
+static const char *g_ColourSampler = "colourSampler";
+static const char *g_DepthSampler = "depthSampler";
+#endif
+
 #endif

@@ -38,13 +38,13 @@ udResult vcImageRenderer_Init()
 
   UD_ERROR_IF(gRefCount != 1, udR_Success);
 
-  UD_ERROR_IF(!vcShader_CreateFromText(&gShaders[0].pShader, g_ImageRendererBillboardVertexShader, g_ImageRendererFragmentShader, vcP3UV2VertexLayout), udR_InternalError);
-  UD_ERROR_IF(!vcShader_CreateFromText(&gShaders[1].pShader, g_ImageRendererMeshVertexShader, g_ImageRendererFragmentShader, vcP3N3UV2VertexLayout), udR_InternalError);
+  UD_ERROR_IF(!vcShader_CreateFromText(&gShaders[0].pShader, g_VertexShaders[vcSI_ImageRendererBillboard], g_FragmentShaders[vcSI_ImageRenderer], vcP3UV2VertexLayout), udR_InternalError);
+  UD_ERROR_IF(!vcShader_CreateFromText(&gShaders[1].pShader, g_VertexShaders[vcSI_ImageRenderer], g_FragmentShaders[vcSI_ImageRenderer], vcP3N3UV2VertexLayout), udR_InternalError);
 
   for (size_t i = 0; i < udLengthOf(gShaders); ++i)
   {
-    UD_ERROR_IF(!vcShader_GetConstantBuffer(&gShaders[i].pEveryObjectConstantBuffer, gShaders[i].pShader, "u_EveryObject", sizeof(gShaders[i].everyObject)), udR_InternalError);
-    UD_ERROR_IF(!vcShader_GetSamplerIndex(&gShaders[i].pDiffuseSampler, gShaders[i].pShader, "u_texture"), udR_InternalError);
+    UD_ERROR_IF(!vcShader_GetConstantBuffer(&gShaders[i].pEveryObjectConstantBuffer, gShaders[i].pShader, g_EveryObject, sizeof(gShaders[i].everyObject)), udR_InternalError);
+    UD_ERROR_IF(!vcShader_GetSamplerIndex(&gShaders[i].pDiffuseSampler, gShaders[i].pShader, g_ColourSampler), udR_InternalError);
   }
 
   result = udR_Success;

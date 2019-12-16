@@ -34,8 +34,8 @@ udResult vcCompass_Create(vcAnchor **ppCompass)
   pCompass = udAllocType(vcAnchor, 1, udAF_Zero);
   UD_ERROR_NULL(pCompass, udR_MemoryAllocationFailure);
 
-  UD_ERROR_IF(!vcShader_CreateFromText(&pCompass->pShader, g_CompassVertexShader, g_CompassFragmentShader, vcP3N3VertexLayout), udR_InvalidConfiguration);
-  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pCompass->pShaderConstantBuffer, pCompass->pShader, "u_EveryObject", sizeof(vcAnchor::shaderBuffer)), udR_InvalidParameter_);
+  UD_ERROR_IF(!vcShader_CreateFromText(&pCompass->pShader, g_VertexShaders[vcSI_Compass], g_FragmentShaders[vcSI_Compass], vcP3N3VertexLayout), udR_InvalidConfiguration);
+  UD_ERROR_IF(!vcShader_GetConstantBuffer(&pCompass->pShaderConstantBuffer, pCompass->pShader, g_EveryObject, sizeof(vcAnchor::shaderBuffer)), udR_InvalidParameter_);
 
   *ppCompass = pCompass;
   pCompass = nullptr;
