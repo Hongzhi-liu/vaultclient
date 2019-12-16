@@ -89,17 +89,16 @@ bool vcShader_CreateFromText(vcShader **ppShader, const char *pVertexSource, con
 
   vcShader *pShader = udAllocType(vcShader, 1, udAF_Zero);
 
-  //static const char *pDefaultShaderHeader = ;
+  const char *pInjectSource = nullptr;
+  udSprintf(&pInjectSource, "float s_CameraDefaultNearPlane=%f;\nfloat s_CameraDefaultFarPlane=%f;\n%s", s_CameraDefaultNearPlane, s_CameraDefaultFarPlane, pShaderDefines == nullptr ? "" : pShaderDefines);
 
   const char *pVertexShader = nullptr;
   const char *pFragmentShader = nullptr;
   const char *pGeometryShader = nullptr;
-  const char *pCompleteDefines = nullptr;
-  udSprintf(&pCompleteDefines, "float s_CameraDefaultNearPlane=%f;\nfloat s_CameraDefaultFarPlane=%f;\n%s", s_CameraDefaultNearPlane, s_CameraDefaultFarPlane, pShaderDefines == nullptr ? "" : pShaderDefines);
-  udSprintf(&pVertexShader, "%s\n%s\n%s", VERT_HEADER, pCompleteDefines, pVertexSource);
-  udSprintf(&pFragmentShader, "%s\n%s\n%s", FRAG_HEADER, pCompleteDefines, pFragmentSource);
+  udSprintf(&pVertexShader, "%s\n%s\n%s", VERT_HEADER, pInjectSource, pVertexSource);
+  udSprintf(&pFragmentShader, "%s\n%s\n%s", FRAG_HEADER, pInjectSource, pFragmentSource);
   if (pGeometrySource != nullptr)
-    udSprintf(&pGeometryShader, "%s\n%s\n%s", FRAG_HEADER, pCompleteDefines, pFragmentSource);
+    udSprintf(&pGeometryShader, "%s\n%s\n%s", FRAG_HEADER, pInjectSource, pFragmentSource);
 
   GLint geometryShaderId = (GLint)-1;
 #if UDPLATFORM_IOS || UDPLATFORM_IOS_SIMULATOR || UDPLATFORM_EMSCRIPTEN
@@ -118,7 +117,7 @@ bool vcShader_CreateFromText(vcShader **ppShader, const char *pVertexSource, con
   udFree(pVertexShader);
   udFree(pFragmentShader);
   udFree(pGeometryShader);
-  udFree(pCompleteDefines);
+  udFree(pInjectSource);
 
   return (pShader != nullptr);
 }
