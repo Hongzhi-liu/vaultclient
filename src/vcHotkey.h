@@ -21,7 +21,6 @@ enum vcBind
   vcB_Up,
   vcB_Right,
   vcB_Down,
-  vcB_Space,
 
   // Other Bindings
   vcB_Remove,
@@ -44,8 +43,8 @@ namespace vcHotkey
 {
   bool IsDown(int keyNum);
   bool IsDown(vcBind key);
-  bool IsPressed(int keyNum);
-  bool IsPressed(vcBind key);
+  bool IsPressed(int keyNum, bool unique = true);
+  bool IsPressed(vcBind key, bool unique = true);
   void GetKeyName(vcBind key, char *pBuffer, uint32_t bufferLen);
 
   template <size_t N>
