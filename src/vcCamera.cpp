@@ -118,7 +118,7 @@ void vcCamera_UpdateMatrices(vcCamera *pCamera, const vcCameraSettings &settings
 
   double orthoSize = udMax(1.0, pCamera->position.z * udTan(settings.fieldOfView / 2.0)); // don't allow a 0 ortho size
 
-  double mapModeAmt = 0.0;//udDot(-udDirectionFromYPR(pCamera->eulerRotation), udDouble3::create(0, 0, 1));
+  double mapModeAmt = udDot(-udDirectionFromYPR(pCamera->eulerRotation), udDouble3::create(0, 0, 1));
 
   if (mapModeAmt > 0.8)
     mapModeAmt = (mapModeAmt - 0.8) * 5;

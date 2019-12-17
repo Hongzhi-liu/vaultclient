@@ -1541,6 +1541,9 @@ vcRenderPickResult vcRender_PolygonPick(vcState *pProgramState, vcRenderContext 
     float b = pProgramState->settings.camera.farPlane * pProgramState->settings.camera.nearPlane / (pProgramState->settings.camera.nearPlane - pProgramState->settings.camera.farPlane);
     double worldDepth = udPow(2.0, pickDepth * udLog2(pProgramState->settings.camera.farPlane + 1.0)) - 1.0;
     double lDepth = a + b / worldDepth;
+    FIX ME FOR ORTHOGRAPHIC
+    //double lDepth = (pProgramState->settings.camera.nearPlane + worldDepth) / pProgramState->settings.camera.farPlane;
+    printf("pickDepth=%f, worldDepth=%f, lDepth=%f\n", pickDepth, worldDepth, lDepth);
     //double lDepth = (2.0 * pProgramState->settings.camera.nearPlane) / (pProgramState->settings.camera.farPlane + pProgramState->settings.camera.nearPlane - depth * (pProgramState->settings.camera.farPlane - pProgramState->settings.camera.nearPlane));
 
     //return (2.0 * s_CameraDefaultNearPlane) / (s_CameraDefaultFarPlane + s_CameraDefaultNearPlane - depth * (s_CameraDefaultFarPlane - s_CameraDefaultNearPlane));
