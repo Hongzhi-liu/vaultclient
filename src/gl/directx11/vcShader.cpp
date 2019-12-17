@@ -2,6 +2,7 @@
 #include "vcD3D11.h"
 #include "udPlatformUtil.h"
 #include "udStringUtil.h"
+#include "vcConstants.h"
 
 #include <d3dcompiler.h>
 #include <D3D11Shader.h>
@@ -60,9 +61,9 @@ bool vsShader_InternalReflectShaderConstantBuffers(ID3D10Blob *pBlob, int type, 
   return true;
 }
 
-bool vcShader_CreateFromText(vcShader **ppShader, const char *pVertexShader, const char *pFragmentShader, const vcVertexLayoutTypes *pInputTypes, uint32_t totalInputs, const char *pGeometryShader /*= nullptr*/)
+bool vcShader_CreateFromText(vcShader **ppShader, const char *pVertexSource, const char *pFragmentSource, const vcVertexLayoutTypes *pInputTypes, uint32_t totalInputs, const char *pShaderDefines /*= nullptr*/, const char *pGeometrySource /*= nullptr*/)
 {
-  if (ppShader == nullptr || pVertexShader == nullptr || pFragmentShader == nullptr || pInputTypes == nullptr)
+  if (ppShader == nullptr || pVertexSource == nullptr || pFragmentSource == nullptr || pInputTypes == nullptr)
     return false;
 
   vcShader *pShader = udAllocType(vcShader, 1, udAF_Zero);
@@ -70,6 +71,17 @@ bool vcShader_CreateFromText(vcShader **ppShader, const char *pVertexShader, con
   ID3D10Blob *pPSBlob = nullptr;
   ID3D10Blob *pGSBlob = nullptr;
   ID3D10Blob *pErrorBlob = nullptr;
+
+  const char *pInjectHeader = nullptr;
+  udSprintf(&pInjectHeader, "float s_CameraDefaultNearPlane=%f;\nfloat s_CameraDefaultFarPlane=%f;\n%s", s_CameraDefaultNearPlane, s_CameraDefaultFarPlane, pShaderDefines == nullptr ? "" : pShaderDefines);
+
+  const char *pVertexShader = nullptr;
+  const char *pFragmentShader = nullptr;
+  const char *pGeometryShader = nullptr;
+  udSprintf(&pVertexShader, "%s\n%s", pInjectHeader, pVertexSource);
+  udSprintf(&pFragmentShader, "%s\n%s", pInjectHeader, pFragmentSource);
+  if (pGeometrySource != nullptr)
+    udSprintf(&pGeometryShader, "%s\n%s", pInjectHeader, pFragmentSource);
 
   // Vertex Shader
   D3DCompile(pVertexShader, udStrlen(pVertexShader), NULL, NULL, NULL, "main", "vs_4_0", 0, 0, &pVSBlob, &pErrorBlob);

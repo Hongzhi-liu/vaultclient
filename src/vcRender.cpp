@@ -1536,11 +1536,14 @@ vcRenderPickResult vcRender_PolygonPick(vcState *pProgramState, vcRenderContext 
 
   if (result.success)
   {
-    // reconstruct from log z
+    // reconstruct linear depth from log z
     float a = pProgramState->settings.camera.farPlane / (pProgramState->settings.camera.farPlane - pProgramState->settings.camera.nearPlane);
     float b = pProgramState->settings.camera.farPlane * pProgramState->settings.camera.nearPlane / (pProgramState->settings.camera.nearPlane - pProgramState->settings.camera.farPlane);
-    double depth = udPow(2.0, pickDepth * udLog2(pProgramState->settings.camera.farPlane + 1.0)) - 1.0;
-    double lDepth = a + b / depth;
+    double worldDepth = udPow(2.0, pickDepth * udLog2(pProgramState->settings.camera.farPlane + 1.0)) - 1.0;
+    double lDepth = a + b / worldDepth;
+    //double lDepth = (2.0 * pProgramState->settings.camera.nearPlane) / (pProgramState->settings.camera.farPlane + pProgramState->settings.camera.nearPlane - depth * (pProgramState->settings.camera.farPlane - pProgramState->settings.camera.nearPlane));
+
+    //return (2.0 * s_CameraDefaultNearPlane) / (s_CameraDefaultFarPlane + s_CameraDefaultNearPlane - depth * (s_CameraDefaultFarPlane - s_CameraDefaultNearPlane));
 
     // note: upside down (1.0 - uv.y)
     udDouble4 clipPos = udDouble4::create(pRenderContext->currentMouseUV.x * 2.0 - 1.0, (1.0 - pRenderContext->currentMouseUV.y) * 2.0 - 1.0, lDepth, 1.0);

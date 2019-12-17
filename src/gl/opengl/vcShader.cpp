@@ -2,7 +2,7 @@
 #include "vcOpenGL.h"
 #include "udPlatformUtil.h"
 #include "udStringUtil.h"
-#include "vcCamera.h"
+#include "vcConstants.h"
 
 #if UDPLATFORM_IOS || UDPLATFORM_IOS_SIMULATOR || UDPLATFORM_EMSCRIPTEN
 # define FRAG_HEADER "#version 300 es\nprecision highp float;\n"
@@ -20,7 +20,7 @@ GLint vcBuildShader(GLenum type, const GLchar *shaderCode)
 #endif
 
   GLint compiled;
-  GLint shaderCodeLen = (GLint)strlen(shaderCode);
+  GLint shaderCodeLen = (GLint)udStrlen(shaderCode);
   GLint shaderObject = glCreateShader(type);
   glShaderSource(shaderObject, 1, &shaderCode, &shaderCodeLen);
   glCompileShader(shaderObject);
@@ -89,16 +89,16 @@ bool vcShader_CreateFromText(vcShader **ppShader, const char *pVertexSource, con
 
   vcShader *pShader = udAllocType(vcShader, 1, udAF_Zero);
 
-  const char *pInjectSource = nullptr;
-  udSprintf(&pInjectSource, "float s_CameraDefaultNearPlane=%f;\nfloat s_CameraDefaultFarPlane=%f;\n%s", s_CameraDefaultNearPlane, s_CameraDefaultFarPlane, pShaderDefines == nullptr ? "" : pShaderDefines);
+  const char *pInjectHeader = nullptr;
+  udSprintf(&pInjectHeader, "float s_CameraDefaultNearPlane=%f;\nfloat s_CameraDefaultFarPlane=%f;\n%s", s_CameraDefaultNearPlane, s_CameraDefaultFarPlane, pShaderDefines == nullptr ? "" : pShaderDefines);
 
   const char *pVertexShader = nullptr;
   const char *pFragmentShader = nullptr;
   const char *pGeometryShader = nullptr;
-  udSprintf(&pVertexShader, "%s\n%s\n%s", VERT_HEADER, pInjectSource, pVertexSource);
-  udSprintf(&pFragmentShader, "%s\n%s\n%s", FRAG_HEADER, pInjectSource, pFragmentSource);
+  udSprintf(&pVertexShader, "%s\n%s\n%s", VERT_HEADER, pInjectHeader, pVertexSource);
+  udSprintf(&pFragmentShader, "%s\n%s\n%s", FRAG_HEADER, pInjectHeader, pFragmentSource);
   if (pGeometrySource != nullptr)
-    udSprintf(&pGeometryShader, "%s\n%s\n%s", FRAG_HEADER, pInjectSource, pFragmentSource);
+    udSprintf(&pGeometryShader, "%s\n%s\n%s", FRAG_HEADER, pInjectHeader, pFragmentSource);
 
   GLint geometryShaderId = (GLint)-1;
 #if UDPLATFORM_IOS || UDPLATFORM_IOS_SIMULATOR || UDPLATFORM_EMSCRIPTEN
@@ -117,7 +117,7 @@ bool vcShader_CreateFromText(vcShader **ppShader, const char *pVertexSource, con
   udFree(pVertexShader);
   udFree(pFragmentShader);
   udFree(pGeometryShader);
-  udFree(pInjectSource);
+  udFree(pInjectHeader);
 
   return (pShader != nullptr);
 }

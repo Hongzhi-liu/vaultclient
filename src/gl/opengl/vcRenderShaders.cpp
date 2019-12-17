@@ -38,9 +38,12 @@ layout (std140) uniform u_fragParams
   vec4 u_contourParams; // contour distance, contour band height, contour rainbow repeat rate, contour rainbow factoring
 };
 
-float linearizeDepth(float depth)
+float logZToLinearZ(float logZ)
 {
-  return (2.0 * s_CameraDefaultNearPlane) / (s_CameraDefaultFarPlane + s_CameraDefaultNearPlane - depth * (s_CameraDefaultFarPlane - s_CameraDefaultNearPlane));
+  float a = s_CameraDefaultFarPlane / (s_CameraDefaultFarPlane - s_CameraDefaultNearPlane);
+  float b = s_CameraDefaultFarPlane * s_CameraDefaultNearPlane / (s_CameraDefaultNearPlane - s_CameraDefaultFarPlane);
+  float worldDepth = pow(2.0, logZ * log2(s_CameraDefaultFarPlane + 1.0)) - 1.0;
+  return a + b / worldDepth;
 }
 
 float getNormalizedPosition(float v, float min, float max)
@@ -50,9 +53,9 @@ float getNormalizedPosition(float v, float min, float max)
 
 // note: an adjusted depth is packed into the returned .w component
 // this is to show the edge highlights against the skybox
-vec4 edgeHighlight(vec3 col, vec2 uv, float depth, vec4 outlineColour, float edgeOutlineThreshold)
+vec4 edgeHighlight(vec3 col, vec2 uv, float logDepth, vec4 outlineColour, float edgeOutlineThreshold)
 {
-  vec4 eyePosition = u_inverseProjection * vec4(uv * vec2(2.0) - vec2(1.0), depth * 2.0 - 1.0, 1.0);
+  vec4 eyePosition = u_inverseProjection * vec4(uv * vec2(2.0) - vec2(1.0), logZToLinearZ(logDepth) * 2.0 - 1.0, 1.0);
   eyePosition /= eyePosition.w;
 
   float sampleDepth0 = texture(u_depth, v_edgeSampleUV0).x;
@@ -60,10 +63,10 @@ vec4 edgeHighlight(vec3 col, vec2 uv, float depth, vec4 outlineColour, float edg
   float sampleDepth2 = texture(u_depth, v_edgeSampleUV2).x;
   float sampleDepth3 = texture(u_depth, v_edgeSampleUV3).x;
 
-  vec4 eyePosition0 = u_inverseProjection * vec4(v_edgeSampleUV0 * vec2(2.0) - vec2(1.0), sampleDepth0 * 2.0 - 1.0, 1.0);
-  vec4 eyePosition1 = u_inverseProjection * vec4(v_edgeSampleUV1 * vec2(2.0) - vec2(1.0), sampleDepth1 * 2.0 - 1.0, 1.0);
-  vec4 eyePosition2 = u_inverseProjection * vec4(v_edgeSampleUV2 * vec2(2.0) - vec2(1.0), sampleDepth2 * 2.0 - 1.0, 1.0);
-  vec4 eyePosition3 = u_inverseProjection * vec4(v_edgeSampleUV3 * vec2(2.0) - vec2(1.0), sampleDepth3 * 2.0 - 1.0, 1.0);
+  vec4 eyePosition0 = u_inverseProjection * vec4(v_edgeSampleUV0 * vec2(2.0) - vec2(1.0), logZToLinearZ(sampleDepth0) * 2.0 - 1.0, 1.0);
+  vec4 eyePosition1 = u_inverseProjection * vec4(v_edgeSampleUV1 * vec2(2.0) - vec2(1.0), logZToLinearZ(sampleDepth1) * 2.0 - 1.0, 1.0);
+  vec4 eyePosition2 = u_inverseProjection * vec4(v_edgeSampleUV2 * vec2(2.0) - vec2(1.0), logZToLinearZ(sampleDepth2) * 2.0 - 1.0, 1.0);
+  vec4 eyePosition3 = u_inverseProjection * vec4(v_edgeSampleUV3 * vec2(2.0) - vec2(1.0), logZToLinearZ(sampleDepth3) * 2.0 - 1.0, 1.0);
 
   eyePosition0 /= eyePosition0.w;
   eyePosition1 /= eyePosition1.w;
@@ -78,8 +81,8 @@ vec4 edgeHighlight(vec3 col, vec2 uv, float depth, vec4 outlineColour, float edg
   float isEdge = 1.0 - step(length(diff0), edgeOutlineThreshold) * step(length(diff1), edgeOutlineThreshold) * step(length(diff2), edgeOutlineThreshold) * step(length(diff3), edgeOutlineThreshold);
 
   vec3 edgeColour = mix(col.xyz, outlineColour.xyz, outlineColour.w);
-  float edgeDepth = min(min(min(sampleDepth0, sampleDepth1), sampleDepth2), sampleDepth3);
-  return vec4(mix(col.xyz, edgeColour, isEdge), mix(depth, edgeDepth, isEdge));
+  float edgeLogDepth = min(min(min(sampleDepth0, sampleDepth1), sampleDepth2), sampleDepth3);
+  return mix(vec4(col.xyz, logDepth), vec4(edgeColour, edgeLogDepth), isEdge);
 }
 
 vec3 hsv2rgb(vec3 c)
@@ -125,7 +128,8 @@ vec3 colourizeByEyeDistance(vec3 col, vec3 fragEyePos)
 void main()
 {
   vec4 col = texture(u_texture, v_uv);
-  float depth = texture(u_depth, v_uv).x;
+  float logZ = texture(u_depth, v_uv).x; 
+  float depth = logZToLinearZ(logZ);
 
   // TODO: I'm fairly certain this is actually wrong (world space calculations), and will have precision issues
   vec4 fragWorldPosition = u_inverseViewProjection * vec4(v_uv * vec2(2.0) - vec2(1.0), depth * 2.0 - 1.0, 1.0);
@@ -144,13 +148,13 @@ void main()
   vec4 outlineColour = u_outlineColour;
   if (outlineColour.w > 0.0 && edgeOutlineWidth > 0.0 && u_outlineColour.w > 0.0)
   {
-    vec4 edgeResult = edgeHighlight(col.xyz, v_uv, depth, outlineColour, edgeOutlineThreshold);
+    vec4 edgeResult = edgeHighlight(col.xyz, v_uv, logZ, outlineColour, edgeOutlineThreshold);
     col.xyz = edgeResult.xyz;
-    depth = edgeResult.w; // to preserve outsides edges, depth written may be adjusted
+    logZ = edgeResult.w; // to preserve outlines, depth written may be adjusted
   }
 
   out_Colour = vec4(col.xyz, 1.0);
-  gl_FragDepth = depth;
+  gl_FragDepth = logZ;
 }
 
 )shader";

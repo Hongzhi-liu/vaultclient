@@ -45,6 +45,7 @@
 #include "vcStringFormat.h"
 #include "vcInternalTexturesData.h"
 #include "vcHotkey.h"
+#include "vcConstants.h"
 
 #include "gl/vcGLState.h"
 #include "gl/vcFramebuffer.h"
