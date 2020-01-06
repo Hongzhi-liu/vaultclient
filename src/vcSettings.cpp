@@ -453,14 +453,14 @@ bool vcSettings_Load(vcSettings *pSettings, bool forceReset /*= false*/, vcSetti
   {
     pSettings->screenshot.hideLabels = data.Get("screenshot.hideLabels").AsBool(false);
     const char *pTemp = data.Get("screenshot.format").AsString(".PNG");
-    for (int i = 0; i < udLengthOf(ScreenshotExportFormats); ++i)
+    for (int i = 0; i < (int)udLengthOf(ScreenshotExportFormats); ++i)
     {
       if (udStrEquali(ScreenshotExportFormats[i], pTemp))
         pSettings->screenshot.format = (vcImageFormats)i;
     }
 
     pTemp = data.Get("screenshot.res").AsString("1080");
-    for (int i = 0; i < udLengthOf(ScreenshotResolutionStrings); ++i)
+    for (int i = 0; i < (int)udLengthOf(ScreenshotResolutionStrings); ++i)
     {
       if (udStrEquali(ScreenshotResolutionStrings[i], pTemp))
         pSettings->screenshot.res = (vcScreenshotOutputResolution)i;
